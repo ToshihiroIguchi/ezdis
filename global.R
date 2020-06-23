@@ -3,9 +3,14 @@ library(ggplot2)
 library(fitdistrplus)
 library(ismev)
 
+library(FAdist) #actuar,evd, EnvStarsより先に読み込ませる
+library(extraDistr)
 library(evd) #evdはactuarより先に読み込ませて、evd::dgumbelなどをマスクする
 
 library(actuar)
+
+library(EnvStats)
+library(mixtools)
 
 
 #ベクトルに強制変換
@@ -56,64 +61,6 @@ gg.hist <- function(vec, bw = NULL){
 }
 
 
-#一般化パレート分布の最尤推定を Sifferらの方法で行う関数
-gp.fit_siffer <- function(x, K = 10, epsilon = 10^-8) {
-  #https://hoxo-m.hatenablog.com/entry/2018/12/25/220217
-  
-  #' @param x データを数値ベクトルとして入力
-  #' @param K デフォルトは 10
-  #' @param epsilon 境界を探索範囲から外すための微小値。デフォルトは 10^-8
-  #' @return パラメータの最尤推定値 c(sigma, gamma) 
-  
-    # 式 (4) の方程式
-  u <- function(theta) mean(1 / (1 + theta * x))
-  v <- function(theta) 1 + mean(log(1 + theta * x))
-  h <- function(theta) u(theta) * v(theta) - 1
-  
-  # 最適化目的関数
-  fn <- function(theta_K, logged=FALSE) {
-    if(logged) theta_K <- exp(theta_K)
-    sum(vapply(theta_K, h, double(1))^2)
-  }
-  
-  # 解の範囲
-  lower_bound <- -1 / max(x)
-  upper_bound <- 2 * (mean(x) - min(x)) / min(x)^2
-  
-  theta_range1 <- c(lower_bound + epsilon, -epsilon)
-  theta_range2 <- c(epsilon, upper_bound)
-  
-  # 初期値の設定
-  theta_init1 <- seq(lower_bound, 0, length.out = K+2)[-c(1, K+2)]
-  theta_init2 <- seq(log(epsilon), log(upper_bound), length.out = K+2)[-c(1, K+2)]
-  
-  # 最適化の実行
-  opt1 <- optim(theta_init1, fn = fn, method = "L-BFGS-B",
-                lower = theta_range1[1], upper = theta_range1[2])
-  opt2 <- optim(theta_init2, fn = fn, logged = TRUE, method = "L-BFGS-B",
-                lower = log(theta_range2[1]), upper = log(theta_range2[2]))
-  
-  # 最適解 (推定値の候補)
-  opt_theta_K <- unique(c(opt1$par, 0, exp(opt2$par)))
-  
-  # プロファイル対数尤度
-  n <- length(x)
-  profileLogLik <- function(theta) {
-    -n * log(mean(log(1 + theta * x))/theta) - n * mean(log(1 + theta * x)) - n
-  }
-  
-  # 最適解のうちプロファイル対数尤度が最大のものを推定値とする
-  pLLs <- vapply(opt_theta_K, profileLogLik, double(1))
-  est_theta <- opt_theta_K[which.max(pLLs)]
-  
-  # パラメータの引き戻し
-  est_gamma <- mean(log(1 + est_theta * x))
-  est_sigma <- est_gamma / est_theta
-  
-  # 結果の返却
-  c(est_sigma, est_gamma)
-}
-
 
 #分布関数にフィッティング
 fit.dist <- function(data, distr = "norm", method = "mle"){
@@ -126,6 +73,10 @@ fit.dist <- function(data, distr = "norm", method = "mle"){
   
   #初期値
   fitdist.start <- NULL
+  fix.arg <- NULL
+  fitdist.lower <- -Inf
+  fitdist.upper <- Inf
+  optim.method <- "Nelder-Mead"
   
   #各分布関数の初期値を指定
   
@@ -133,7 +84,31 @@ fit.dist <- function(data, distr = "norm", method = "mle"){
   if(distr == "gumbel"){
     gum.res <- gum.fit(data)
     fitdist.start <- list(alpha = gum.res$mle[1], scale = gum.res$mle[2])
+    fitdist.lower <- c(-Inf, 0)
   }
+  
+  #逆ワイブル分布の場合の初期値
+  if(distr == "invweibull"){
+    fitdist.start <- list(shape = 1, scale = 1)
+    fitdist.lower <- c(0, 0)
+  }
+  
+  #3母数ワイブル分布の初期値
+  if(distr == "weibull3"){
+    
+    fitdist.start <- list(shape = 1, scale = 1, thres = min(data) - 1)
+    fitdist.lower <- c(0, 0, -Inf)
+    
+  }
+  
+  #レイリー分布の初期値
+  if(distr == "rayleigh"){
+    fitdist.start <- list(sigma = 1)
+    fitdist.lower <- c(0)
+    
+  }
+  
+  
   
   #一般化極値分布の場合の初期値
   if(distr == "gev"){
@@ -141,20 +116,97 @@ fit.dist <- function(data, distr = "norm", method = "mle"){
     fitdist.start <- list(loc = gev.res$mle[1], scale = gev.res$mle[2], shape = gev.res$mle[3])
   }
 
-  #一般化極値分布の場合の初期値
-  if(distr == "genpareto"){
-    gen.pareto.res <- gp.fit_siffer(data)
-    fitdist.start <- list(shape1 = gen.pareto.res[1], shape2 = gen.pareto.res[2])
-    print(fitdist.start)
+  #一般化パレート分布の場合の初期値
+  if(distr == "gpd"){
+    gen.pareto.res <- gev.fit(data)
+    
+    fitdist.start <- list(
+      loc = gen.pareto.res$mle[1], 
+      scale = gen.pareto.res$mle[2], 
+      shape = gen.pareto.res$mle[3]
+    )
+    
+    fitdist.lower <- c(-Inf, 0, -Inf)
+  }
+  
+  #指数分布の場合の初期値
+  if(distr == "exp"){
+    
+    fitdist.lower <- c(0)
+  
+  }
+  
+  #タイプ2パレート分布の場合の初期値
+  if(distr == "pareto2"){
+    fitdist.start <- list(shape = 1, scale = 1)
+    fitdist.lower <- c(0, 0)
   }
   
   
+  #ベータ分布の初期値
+  if(distr == "beta"){
+    fitdist.start <- list(shape1 = 1, shape2 = 1)
+    fitdist.lower <- c(0, 0)
+  }
+  
+  
+  #カイ二乗分布
+  if(distr == "chisq"){
+    fitdist.start <- list(df = 1)
+  }
+  
+  #t分布の場合の初期値
+  if(distr == "t"){
+    fitdist.start <- list(df = 1, ncp = 1)
+  }
+  
+  #F分布の場合の初期値
+  if(distr == "f"){
+    fitdist.start <- list(df1 = 1, df2 = 1, ncp = 1)
+  }
+  
+
+  #2変量混合正規分布の場合の初期値
+  if(distr == "normMix"){
+    
+    
+    normalmixEM.res <- normalmixEM(data)
+    
+    fitdist.start <- list(
+      mean1 = normalmixEM.res$mu[1], 
+      sd1 = normalmixEM.res$sigma[1],
+      mean2 = normalmixEM.res$mu[2],
+      sd2 = normalmixEM.res$sigma[2],
+      p.mix = 1-normalmixEM.res$lambda[1])
+    
+    
+    fitdist.lower <- c(-Inf, 0, -Inf, 0, 0)
+    fitdist.upper <- c(Inf, Inf, Inf, Inf, 1)
+    
+
+  }
+  
+
+  
   #計算中の分布関数を表示
   print(distr)
-  
+
   #フィッティング
-  ret <- try(fitdist(data = data, distr = distr, method = method, start = fitdist.start), silent = TRUE)
+  ret <- try(fitdist(data = data, distr = distr, method = method, 
+                     start = fitdist.start, fix.arg = fix.arg,
+                     lower = fitdist.lower, upper = fitdist.upper,
+                     optim.method = optim.method), silent = FALSE)
   
+  #エラーならmgeで計算
+  if(class(ret)[1] == "try-error"){
+    ret <- try(fitdist(data = data, distr = distr, method = "mge", 
+                       start = fitdist.start, fix.arg = fix.arg,
+                       lower = fitdist.lower, upper = fitdist.upper,
+                       optim.method = optim.method
+                       ), silent = FALSE)
+  }
+  
+
   #エラーならNAを返す
   if(class(ret)[1] == "try-error"){
     ret <- list()

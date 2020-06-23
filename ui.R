@@ -3,6 +3,14 @@ library(shiny)
 
 library(DT)
 
+#分布関数のデータ読み込み
+dist <- read.csv("dist.csv")
+
+#使用する手法
+use.dist <- dist[, "distr"] %>% as.vec()
+names(use.dist) <- dist[, "name"] %>% as.vec()
+use.dist.sel <- use.dist[which(dist[, "use"] %>% as.vec())]
+
 
 
 shinyUI(fluidPage(
@@ -11,7 +19,7 @@ shinyUI(fluidPage(
     sidebarPanel(
 
       #ファイル選択
-      fileInput("file", "Choose CSV File",
+      fileInput("file", "Data file(.csv)",
                 accept = c("csv")
                 ),
       
@@ -32,6 +40,10 @@ shinyUI(fluidPage(
                            ),
                   
                   tabPanel("Table", 
+                           #https://code.i-harness.com/ja/q/227d360
+                           tags$head(
+                             tags$link(rel = "stylesheet", type = "text/css", href = "my.css")
+                           ),
                            DT::dataTableOutput("result")
                            ),
                   
@@ -39,7 +51,13 @@ shinyUI(fluidPage(
                            plotOutput("result.plot"),
                            verbatimTextOutput("summary"),
                            verbatimTextOutput("gofstat")
-                           )
+                           ),
+                  
+                  tabPanel("Setting",
+                           checkboxGroupInput("use", label = "Use distibution",
+                                       choices = use.dist, 
+                                       selected = use.dist.sel,
+                                       inline = TRUE))
       )
       
       

@@ -10,6 +10,12 @@ library(DT)
 dist <- read.csv("dist.csv")
 
 
+#Maximum upload size exceededを回避
+#100MB設定
+#https://github.com/rstudio/shiny-examples/blob/master/066-upload-file/server.R
+#https://stackoverflow.com/questions/18037737/how-to-change-maximum-upload-size-exceeded-restriction-in-shiny-and-save-user
+options(shiny.maxRequestSize = 100*1024^2)
+
 
 shinyServer(function(input, output, session) {
   
@@ -27,7 +33,6 @@ shinyServer(function(input, output, session) {
                 choices = c(NA, colnames(raw.data())))
       })
     
-
     #データ選択されたら
     observeEvent(is.null.na.null(input$colname), {
 
@@ -59,8 +64,16 @@ shinyServer(function(input, output, session) {
             #インジケータを進ませる
             incProgress(1/nrow(dist), detail = distr.original.name)
             
-            #あてはめ
-            ret[[distr.name]] <- fit.dist(data = data.vec, distr = distr.name)
+            #print(match(distr.name, input$use))
+            
+            #計算リストにあるか確認
+            if(match(distr.name, input$use) %>% is.na() == FALSE){
+              #あてはめ
+              ret[[distr.name]] <- fit.dist(data = data.vec, distr = distr.name)
+              
+              
+            }
+            
             
             #nameをリストに
             ret[[distr.name]]$name <- distr.original.name
@@ -85,13 +98,23 @@ shinyServer(function(input, output, session) {
       dt.result <- reactive({summary(result())})
       
       #結果一覧表示
-      output$result <- DT::renderDataTable(dt.result()[, -1], options = list(autoWidth = TRUE))
+      output$result <- DT::renderDataTable(
+        dt.result()[, -1], 
+        server = FALSE,
+        filter = 'top',
+        selection = "none",
+        options = list(autoWidth = TRUE, pageLength = 100)
+      )
+      
       
       #変数選択
       output$distr.sel <- renderUI({
         
+        choices.distr <- dt.result()[, "distr"] %>% as.vec()
+        names(choices.distr) <- dt.result()[, "name"] %>% as.vec()
+        
         selectInput("distr.sel", label = "Distribution",
-                    choices = dt.result()[, "distr"] %>% as.vec())
+                    choices = choices.distr)
         
       })
       
