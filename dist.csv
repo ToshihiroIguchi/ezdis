@@ -2,7 +2,7 @@ distr,name,use,memo
 norm,normal distribution,TRUE,
 lnorm,log-normal distribution,TRUE,
 gev,generalized extreme value distribution,TRUE,
-gumbel,Gumbel distribution,TRUE,
+Gumbel,Gumbel distribution,TRUE,
 invweibull,inverse Weibull distribution(Frechet distribution),TRUE,
 weibull,Weibull distribution,TRUE,
 weibull3,three-parameter Weibull distribution,TRUE,

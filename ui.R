@@ -57,7 +57,11 @@ shinyUI(fluidPage(
                            checkboxGroupInput("use", label = "Use distibution",
                                        choices = use.dist, 
                                        selected = use.dist.sel,
-                                       inline = TRUE))
+                                       inline = TRUE)
+                           ),
+                  tabPanel("Debug",
+                           verbatimTextOutput("fit.dist.res")
+                           )
       )
       
       

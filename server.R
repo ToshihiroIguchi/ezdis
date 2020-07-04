@@ -54,7 +54,6 @@ shinyServer(function(input, output, session) {
           
           #各分布関数にあてはめる
           for(i in 1:nrow(dist)){
-            
             #分布関数名
             distr.name <- dist[i, "distr"] %>% as.vec()
             
@@ -63,22 +62,16 @@ shinyServer(function(input, output, session) {
             
             #インジケータを進ませる
             incProgress(1/nrow(dist), detail = distr.original.name)
-            
-            #print(match(distr.name, input$use))
-            
+
             #計算リストにあるか確認
             if(match(distr.name, input$use) %>% is.na() == FALSE){
               #あてはめ
               ret[[distr.name]] <- fit.dist(data = data.vec, distr = distr.name)
-              
-              
             }
-            
-            
+
             #nameをリストに
             ret[[distr.name]]$name <- distr.original.name
-            
-            
+
           }
           
         })
@@ -97,15 +90,20 @@ shinyServer(function(input, output, session) {
       #結果一覧をdata.frameで作成
       dt.result <- reactive({summary(result())})
       
-      #結果一覧表示
-      output$result <- DT::renderDataTable(
-        dt.result()[, -1], 
-        server = FALSE,
-        filter = 'top',
-        selection = "none",
-        options = list(autoWidth = TRUE, pageLength = 100)
-      )
+      #デバッグ用の表示
+      output$fit.dist.res <- renderPrint({
+        result()
+      })
       
+      #結果一覧表示
+      output$result <- DT::renderDataTable({
+        datatable(
+          dt.result()[, -1],
+          filter = 'top',
+          selection = "none",
+          options = list(autoWidth = TRUE, pageLength = 100)
+          ) %>% formatRound(columns = c(2:8), digits = 2)
+        }, server = FALSE)
       
       #変数選択
       output$distr.sel <- renderUI({
@@ -133,10 +131,7 @@ shinyServer(function(input, output, session) {
         gofstat(result()[[input$distr.sel]]) %>% 
           capture.output() %>% paste(by = "\n")
       })
-      
-      
-      
-      
+
     })
     
     

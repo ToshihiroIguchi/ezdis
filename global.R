@@ -1,5 +1,6 @@
 #ライブラリ読み込み
 library(ggplot2)
+library(tibble)
 library(fitdistrplus)
 library(ismev)
 
@@ -12,6 +13,10 @@ library(actuar)
 library(EnvStats)
 library(mixtools)
 
+library(goftest) #CVMのomega2からp-valueを計算
+
+#Gumbel関数の読み込み
+source("gumbel.R")
 
 #ベクトルに強制変換
 as.vec <- function(x){
@@ -60,6 +65,77 @@ gg.hist <- function(vec, bw = NULL){
   return(ret)
 }
 
+#NULLをNAに変換
+null.na <- function(x){
+  if(is.null(x)){return(NA)}else{return(x)}
+}
+
+#KSのD値からp値を計算
+kspval <- function(n, D){
+  
+  #エラーチェック
+  if(!is.numeric(n) || !is.numeric(D)){return(NA)}
+  
+  #https://github.com/SurajGupta/r-source/blob/master/src/library/stats/R/ks.test.R
+  
+  pkstwo.fn <- function(x){
+    
+    #初期値
+    ret <- 0
+    
+    #Σを計算
+    for(i in c(-10000:10000)){
+      ret <- ret + ((-1)^i)*exp(-2*(i^2)*(x^2))
+    }
+    
+    #戻り値
+    return(ret)
+    
+  }
+  
+  
+  #p値の計算
+  ret <- 1 - pkstwo.fn(sqrt(n) * D)
+  
+  #戻り値
+  return(ret)
+  
+}
+
+#CVMのomega2からp-valueを計算
+cvmpval <- function(n, omega2){
+  #https://github.com/cran/goftest/blob/master/R/cvmtest.R
+  
+  #エラーチェック
+  if(!is.numeric(n) || !is.numeric(omega2)){return(NA)}
+  
+  #cvm test
+  ret <- try(pCvM(q = omega2, n = n, lower.tail = FALSE), silent = FALSE)
+  
+  #エラーだったらNAを返す
+  if(class(ret) == "try-error"){return(NA)}
+  
+  #戻り値
+  return(ret)
+}
+
+#ADのAnからp-valueを計算
+adpval <- function(n, An){
+  
+  #エラーチェック
+  if(!is.numeric(n) || !is.numeric(An)){return(NA)}
+  
+  #cvm test
+  ret <- try(pAD(q = An, n = n, lower.tail = FALSE), silent = FALSE)
+  
+  #エラーだったらNAを返す
+  if(class(ret) == "try-error"){return(NA)}
+  
+  #戻り値
+  return(ret)
+  
+  
+}
 
 
 #分布関数にフィッティング
@@ -78,10 +154,30 @@ fit.dist <- function(data, distr = "norm", method = "mle"){
   fitdist.upper <- Inf
   optim.method <- "Nelder-Mead"
   
+  #エラーの場合の戻り値を定義
+  error.ret <- function(st = Sys.time()){
+    ret <- list()
+    class(ret) <- "fitdist.error"
+    ret$CalculationTime <- st - t0
+    return(ret)
+  }
+  
   #各分布関数の初期値を指定
   
+  #対数正規分布の場合の初期値
+  if(distr == "lnorm"){
+    
+    #最小値がゼロ以下で対数になりえない場合は空の結果を返す
+    if(min(data) <= 0){
+      return(error.ret(Sys.time()))
+    }
+    
+    fitdist.start <- list(meanlog = mean(log(data)), sdlog = sd(log(data)))
+    fitdist.lower <- c(-Inf, 0)
+  }
+  
   #ガンベル分布の場合の初期値
-  if(distr == "gumbel"){
+  if(distr == "Gumbel"){
     gum.res <- gum.fit(data)
     fitdist.start <- list(alpha = gum.res$mle[1], scale = gum.res$mle[2])
     fitdist.lower <- c(-Inf, 0)
@@ -103,22 +199,43 @@ fit.dist <- function(data, distr = "norm", method = "mle"){
   
   #レイリー分布の初期値
   if(distr == "rayleigh"){
+    
+    #最小値がゼロ以下だとエラー
+    if(min(data) <= 0){
+      return(error.ret(Sys.time()))
+    }
+    
+    
     fitdist.start <- list(sigma = 1)
     fitdist.lower <- c(0)
     
   }
   
-  
-  
   #一般化極値分布の場合の初期値
   if(distr == "gev"){
-    gev.res <- gev.fit(data)
+    
+    #evdパッケージのgev関数
+    gev.res <- try(gev.fit(data), silent = FALSE)
+    
+    #結果がエラーなら空の結果を返す
+    if(class(gev.res)[1] == "try-error"){
+      return(error.ret(Sys.time()))
+    }
+
     fitdist.start <- list(loc = gev.res$mle[1], scale = gev.res$mle[2], shape = gev.res$mle[3])
+    
+    fitdist.lower <- c(-Inf, 0, -Inf)
+    
   }
 
   #一般化パレート分布の場合の初期値
   if(distr == "gpd"){
-    gen.pareto.res <- gev.fit(data)
+    gen.pareto.res <- try(gev.fit(data), silent  = FALSE)
+    
+    #結果がエラーなら空の結果を返す
+    if(class(gen.pareto.res)[1] == "try-error"){
+      return(error.ret(Sys.time()))
+    }
     
     fitdist.start <- list(
       loc = gen.pareto.res$mle[1], 
@@ -136,19 +253,23 @@ fit.dist <- function(data, distr = "norm", method = "mle"){
   
   }
   
+  #パレート分布の場合の初期値(EnvStatsを想定)
+  if(distr == "pareto"){
+    fitdist.start <- list(shape = 1, location = 1)
+    fitdist.lower <- c(0, 0)
+  }
+  
   #タイプ2パレート分布の場合の初期値
   if(distr == "pareto2"){
     fitdist.start <- list(shape = 1, scale = 1)
     fitdist.lower <- c(0, 0)
   }
   
-  
   #ベータ分布の初期値
   if(distr == "beta"){
     fitdist.start <- list(shape1 = 1, shape2 = 1)
     fitdist.lower <- c(0, 0)
   }
-  
   
   #カイ二乗分布
   if(distr == "chisq"){
@@ -165,7 +286,6 @@ fit.dist <- function(data, distr = "norm", method = "mle"){
     fitdist.start <- list(df1 = 1, df2 = 1, ncp = 1)
   }
   
-
   #2変量混合正規分布の場合の初期値
   if(distr == "normMix"){
     
@@ -186,33 +306,38 @@ fit.dist <- function(data, distr = "norm", method = "mle"){
 
   }
   
-
-  
   #計算中の分布関数を表示
   print(distr)
-
-  #フィッティング
-  ret <- try(fitdist(data = data, distr = distr, method = method, 
-                     start = fitdist.start, fix.arg = fix.arg,
-                     lower = fitdist.lower, upper = fitdist.upper,
-                     optim.method = optim.method), silent = FALSE)
   
+  #フィッティングを関数に
+  fitdist.fn <- function(method = method){
+    
+    #フィッティング
+    ret <- suppressWarnings(
+      try(fitdist(data = data, distr = distr, method = method, 
+                  start = fitdist.start, fix.arg = fix.arg,
+                  lower = fitdist.lower, upper = fitdist.upper,
+                  optim.method = optim.method), silent = FALSE)
+    )
+
+    #戻り値
+    return(ret)
+    
+  }
+ 
+  #フィッティング
+  ret <- fitdist.fn(method = method)
+
   #エラーならmgeで計算
   if(class(ret)[1] == "try-error"){
-    ret <- try(fitdist(data = data, distr = distr, method = "mge", 
-                       start = fitdist.start, fix.arg = fix.arg,
-                       lower = fitdist.lower, upper = fitdist.upper,
-                       optim.method = optim.method
-                       ), silent = FALSE)
+    ret <- fitdist.fn(method = "mge")
   }
-  
 
-  #エラーならNAを返す
+  #エラーなら空のリストを返す
   if(class(ret)[1] == "try-error"){
-    ret <- list()
-    class(ret) <- "fitdist.error"
+    return(error.ret(Sys.time()))
   }
-  
+
   #時間を書き込み
   ret$CalculationTime <- Sys.time() - t0
   
@@ -235,30 +360,48 @@ summary.fit.dist <- function(data){
     #エラーでなければデータフレーム作成
     if(class(gofstat.res)[1] != "try-error"){
       
-      df0 <- data.frame(
-        distr = names(data)[i],
-        name = data[[i]]$name,
-        AIC = data[[i]]$aic,
-        BIC = data[[i]]$bic,
-        log.likelihood = data[[i]]$loglik,
-        Kolmogorov.Smirnov.statistic = gofstat.res$ks,
-        Cramer.von.Mises.statistic = gofstat.res$cvm,
-        Anderson.Darling.statistic = gofstat.res$ad,
-        CalculationTime = data[[i]]$CalculationTime
+      #データフレーム作成
+      df0 <- tibble(
+        distr = names(data)[i][1],
+        name = data[[i]]$name[1],
+        AIC = null.na(data[[i]]$aic)[1],
+        BIC = null.na(data[[i]]$bic)[1],
+        "log likelihood" = null.na(data[[i]]$loglik)[1],
+        
+        #連続分布の場合
+        "Kolmogorov-Smirnov statistic(D)" = null.na(gofstat.res$ks)[1],
+        "Kolmogorov-Smirnov test p-value" = kspval(data[[i]]$n, gofstat.res$ks)[1],
+        "Cramer-von Mises statistic(omega2)" = null.na(gofstat.res$cvm)[1],
+        "Cramer-von Mises test p-value" = cvmpval(data[[i]]$n, gofstat.res$cvm)[1],
+        "Anderson-Darling statistic(An)" = null.na(gofstat.res$ad)[1],
+        "Anderson-Darling test p-value" = adpval(data[[i]]$n, gofstat.res$ad)[1],
+        
+        
+        #離散分布の場合
+        "Chi-squared p-value" = null.na(gofstat.res$chisqpvalue)[1],
+        
+        
+        "Calculation time" = data[[i]]$CalculationTime[1]
       )
       
-      #結合
-      if(!is.null(ret)){
-        ret <- ret %>% rbind(df0)
-      }else{
-        ret <- df0
-      }
+      
+    }
+
+    #結合
+    if(!is.null(ret)){
+      ret <- dplyr::bind_rows(ret, df0)
+    }else{
+      ret <- df0
     }
 
   }
   
   #AICの小さな順に並び替え
   ret <- ret %>% dplyr::arrange(AIC)
+  
+  #重複を削除
+  ret <- dplyr::distinct(ret)
+  
   
   #戻り値
   return(ret)
