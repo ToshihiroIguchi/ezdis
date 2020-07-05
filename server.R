@@ -99,10 +99,13 @@ shinyServer(function(input, output, session) {
       output$result <- DT::renderDataTable({
         datatable(
           dt.result()[, -1],
+          extensions = c('Buttons'), 
           filter = 'top',
           selection = "none",
-          options = list(autoWidth = TRUE, pageLength = 100)
-          ) %>% formatRound(columns = c(2:8), digits = 2)
+          options = list(
+            autoWidth = TRUE, pageLength = 100,
+            dom = 'Blfrtip',buttons = c("copy", "csv"))
+          ) %>% formatRound(columns = c(2:(ncol(dt.result()) - 1)), digits = 3)
         }, server = FALSE)
       
       #変数選択

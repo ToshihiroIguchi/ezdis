@@ -56,9 +56,9 @@ dnormmixn <- function(x, mean, sd, rate){
 }
 
 #累積分布
-pnormmixn <- function(x, mean, sd, rate){
+pnormmixn <- function(q, mean, sd, rate){
   #エラーチェック
-  if(!is.numeric(x)){stop("x is not numeric.")}
+  if(!is.numeric(q)){stop("x is not numeric.")}
   
   #エラーチェック
   normmixn.chk(mean, sd, rate)
@@ -67,11 +67,11 @@ pnormmixn <- function(x, mean, sd, rate){
   rate <- norm.rate(rate)
   
   #初期値
-  ret <- rep(0, length(x))
+  ret <- rep(0, length(q))
   
   #足し合わせ
   for(i in 1:length(mean)){
-    ret <- ret + rate[i]*pnorm(x, mean[i], sd[i])
+    ret <- ret + rate[i]*pnorm(q, mean[i], sd[i])
   }
   
   #戻り値
@@ -81,10 +81,26 @@ pnormmixn <- function(x, mean, sd, rate){
 #確率点
 qnormmixn <- function(p, mean, sd, rate){
   
+  #戻り値
+  ret <- rep(NA, length(p))
   
+  for(i in 1:length(p)){
+    
+    #最小化する関数
+    q.opt <- function(x){(pnormmixn(q = x, mean = mean, sd = sd, rate = rate) - p[i])^2}
+    
+    #最適化
+    opt.res <- optimize(q.opt, lower = 0, upper = 1)
+    
+    ret[i] <- opt.res$objective
+    
+  }
   
+  return(ret)
 }
 
+
+qnormmixn(p = 0.5, mean = c(1,5), sd = c(1,2), rate = c(0.5, 0.5))
 
 
 

@@ -71,31 +71,28 @@ null.na <- function(x){
 }
 
 #KSのD値からp値を計算
-kspval <- function(n, D){
+kspval <- function(n, D, k.max = 100){
   
   #エラーチェック
   if(!is.numeric(n) || !is.numeric(D)){return(NA)}
   
   #https://github.com/SurajGupta/r-source/blob/master/src/library/stats/R/ks.test.R
   
-  pkstwo.fn <- function(x){
+  pkstwo.fn <- function(x, k.max = 10000){
     
-    #初期値
-    ret <- 0
-    
-    #Σを計算
-    for(i in c(-10000:10000)){
-      ret <- ret + ((-1)^i)*exp(-2*(i^2)*(x^2))
+
+    ret <- 1
+    for(i in c(1:k.max)){
+      ret <- ret + 2*((-1)^i)*exp(-2*(i^2)*(x^2))
     }
     
+ 
     #戻り値
     return(ret)
-    
   }
   
-  
   #p値の計算
-  ret <- 1 - pkstwo.fn(sqrt(n) * D)
+  ret <- 1 - pkstwo.fn(sqrt(n) * D, k.max = k.max)
   
   #戻り値
   return(ret)
@@ -136,7 +133,6 @@ adpval <- function(n, An){
   
   
 }
-
 
 #分布関数にフィッティング
 fit.dist <- function(data, distr = "norm", method = "mle"){
@@ -383,8 +379,7 @@ summary.fit.dist <- function(data){
         
         "Calculation time" = data[[i]]$CalculationTime[1]
       )
-      
-      
+
     }
 
     #結合
@@ -401,8 +396,7 @@ summary.fit.dist <- function(data){
   
   #重複を削除
   ret <- dplyr::distinct(ret)
-  
-  
+
   #戻り値
   return(ret)
 }
