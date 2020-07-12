@@ -11,16 +11,23 @@ use.dist <- dist[, "distr"] %>% as.vec()
 names(use.dist) <- dist[, "name"] %>% as.vec()
 use.dist.sel <- use.dist[which(dist[, "use"] %>% as.vec())]
 
+#A character string coding for the fitting method #フィッティング法
+fitdist.method <- c("mle", "mme", "qme", "mge", "mse")
+names(fitdist.method) <- c("maximum likelihood estimation", 
+                           "moment matching estimation",
+                           "quantile matching estimation",
+                           "maximum goodness-of-fit estimation",
+                           "maximum spacing estimation")
 
-
+  
 shinyUI(fluidPage(
 
   sidebarLayout(
     sidebarPanel(
 
       #ファイル選択
-      fileInput("file", "Data file(.csv)",
-                accept = c("csv")
+      fileInput("file", "Data file(.csv, .xls, .xlsx, .xlsm)",
+                accept = c("csv", "xls", "xlsx", "xlsm")
                 ),
       
       #変数の選択
@@ -57,7 +64,11 @@ shinyUI(fluidPage(
                            checkboxGroupInput("use", label = "Use distibution",
                                        choices = use.dist, 
                                        selected = use.dist.sel,
-                                       inline = TRUE)
+                                       inline = TRUE),
+                           
+                           selectInput("fitdist.method", label = "Fitting method",
+                                       choices = fitdist.method)
+                           
                            ),
                   tabPanel("Debug",
                            verbatimTextOutput("fit.dist.res")

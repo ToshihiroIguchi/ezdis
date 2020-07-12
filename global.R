@@ -1,6 +1,10 @@
 #ライブラリ読み込み
 library(ggplot2)
 library(tibble)
+
+library(readr)
+library(readxl)
+
 library(fitdistrplus)
 library(ismev)
 
@@ -17,6 +21,10 @@ library(goftest) #CVMのomega2からp-valueを計算
 
 #Gumbel関数の読み込み
 source("gumbel.R")
+
+#多変量混合正規分布
+source("normmixn.R")
+
 
 #ベクトルに強制変換
 as.vec <- function(x){
@@ -185,6 +193,11 @@ fit.dist <- function(data, distr = "norm", method = "mle"){
     fitdist.lower <- c(0, 0)
   }
   
+  #ワイブル分布の場合の初期値
+  if(distr == "weibull"){
+    fitdist.lower <- c(0, 0)
+  }
+  
   #3母数ワイブル分布の初期値
   if(distr == "weibull3"){
     
@@ -261,6 +274,18 @@ fit.dist <- function(data, distr = "norm", method = "mle"){
     fitdist.lower <- c(0, 0)
   }
   
+  #バーンバウム　サンダース分布の初期値
+  if(distr == "fatigue"){
+    fitdist.start <- list(alpha = 0.5, beta = 1, mu = 0)
+    fitdist.lower <- c(0, 0, -Inf)
+  }
+  
+  #ロジスティック分布の初期値
+  if(distr == "llogis"){
+    fitdist.lower <- c(0, 0)
+  }
+  
+  
   #ベータ分布の初期値
   if(distr == "beta"){
     fitdist.start <- list(shape1 = 1, shape2 = 1)
@@ -285,8 +310,13 @@ fit.dist <- function(data, distr = "norm", method = "mle"){
   #2変量混合正規分布の場合の初期値
   if(distr == "normMix"){
     
+    #EMアルゴリズム
+    normalmixEM.res <- try(normalmixEM(data), silent = TRUE)
     
-    normalmixEM.res <- normalmixEM(data)
+    #エラーの場合は止める
+    if(class(normalmixEM.res)[1] == "try-error"){
+      return(error.ret(Sys.time()))
+    }
     
     fitdist.start <- list(
       mean1 = normalmixEM.res$mu[1], 
@@ -301,6 +331,84 @@ fit.dist <- function(data, distr = "norm", method = "mle"){
     
 
   }
+  
+  #3変量混合正規分布の場合の初期値
+  if(distr == "normmix3"){
+    
+    #EMアルゴリズム
+    normalmixEM.res <- try(normalmixEM(data, k = 3), silent = TRUE)
+    
+    #エラーの場合は止める
+    if(class(normalmixEM.res)[1] == "try-error"){
+      return(error.ret(Sys.time()))
+    }
+    
+    
+    fitdist.start <- list(
+      mean1 = normalmixEM.res$mu[1], 
+      sd1 = normalmixEM.res$sigma[1],
+      rate1 = normalmixEM.res$lambda[1],
+      
+      mean2 = normalmixEM.res$mu[2],
+      sd2 = normalmixEM.res$sigma[2],
+      rate2 = normalmixEM.res$lambda[2],
+      
+      mean3 = normalmixEM.res$mu[3],
+      sd3 = normalmixEM.res$sigma[3],
+      rate3 = normalmixEM.res$lambda[3])
+    
+    
+    fitdist.lower <- c(-Inf, 0, 0, -Inf, 0, 0, -Inf, 0, 0)
+    fitdist.upper <- c(Inf, Inf, 1, Inf, Inf, 1, Inf, Inf, 1)
+    
+    
+  }
+  
+  #4変量混合正規分布の場合の初期値
+  if(distr == "normmix4"){
+    
+    #EMアルゴリズム
+    normalmixEM.res <- try(normalmixEM(data, k = 4), silent = TRUE)
+    
+    #エラーの場合は止める
+    if(class(normalmixEM.res)[1] == "try-error"){
+      return(error.ret(Sys.time()))
+    }
+    
+    fitdist.start <- list(
+      mean1 = normalmixEM.res$mu[1], 
+      sd1 = normalmixEM.res$sigma[1],
+      rate1 = normalmixEM.res$lambda[1],
+      
+      mean2 = normalmixEM.res$mu[2],
+      sd2 = normalmixEM.res$sigma[2],
+      rate2 = normalmixEM.res$lambda[2],
+      
+      mean3 = normalmixEM.res$mu[3],
+      sd3 = normalmixEM.res$sigma[3],
+      rate3 = normalmixEM.res$lambda[3],
+      
+      mean4 = normalmixEM.res$mu[4],
+      sd4 = normalmixEM.res$sigma[4],
+      rate4 = normalmixEM.res$lambda[4]
+      
+      )
+    
+    
+    fitdist.lower <- c(-Inf, 0, 0, -Inf, 0, 0, -Inf, 0, 0, -Inf, 0, 0)
+    fitdist.upper <- c(Inf, Inf, 1, Inf, Inf, 1, Inf, Inf, 1, Inf, Inf, 1)
+    
+    
+  } 
+  
+  #一様分布の場合の初期値
+  if(distr == "unif"){
+    fitdist.start <- list(min = min(data), max = max(data))
+    fitdist.lower <- c(-Inf, mean(data))
+    fitdist.upper <- c(mean(data),Inf)
+    
+  }
+  
   
   #計算中の分布関数を表示
   print(distr)
@@ -401,5 +509,99 @@ summary.fit.dist <- function(data){
   return(ret)
 }
 
+#文字列末尾確認
+chk.end <- function(chk, chr){
+  
+  chr.pos <- grep(paste0("\\", chk, "$"), chr)
+  if(length(chr.pos) == 0){return(FALSE)}else{return(TRUE)}
+  
+}
 
+#data.frameの行数を拡張
+df.long <- function(df, length){
+  
+  #元のデータフレームの長さ
+  df.nrow <- nrow(df)
+  df.ncol <- ncol(df)
+  
+  #元の長さがlengthより長ければエラー
+  if(df.ncol > length){stop("length is too small.")}
+  
+  #長さが同じならそのまま返す
+  if(df.ncol == length){return(df)}
+  
+  
+  #不足しているデータフレームを作成
+  add.df.nrow <- length - df.nrow
+  
+  add.df <- matrix(rep(NA, add.df.nrow * df.ncol), ncol = df.ncol) %>% 
+    as.data.frame() %>% as_tibble()
+  colnames(add.df) <- colnames(df)
+  
+  #結合
+  ret <- df %>% rbind(add.df)
+  
+  #戻り値
+  return(ret)
+  
+}
 
+#データ読み込み
+read.data <- function(file){
+
+  #csvの場合
+  if(chk.end(".csv", file)){
+    ret <- read_csv(file) %>%
+      select_if(is.numeric) #数値のみ選択
+    
+    #戻り値
+    return(ret)
+  }
+
+  #エクセル形式の場合
+  if(chk.end(".xlsx", file) || chk.end(".xls", file) || chk.end(".xlsm", file)){
+
+    ret <- tibble()
+    #シート名を抜き出す
+    excel.sheets <- excel_sheets(file)
+
+    #各シートから抜き出す
+    for(i in 1:length(excel.sheets)){
+      
+      #シートから読み込みし数値列のみ抜き出す
+      df.i <- try(read_excel(file, sheet = i) %>% select_if(is.numeric), silent = FALSE)
+
+      #エラーが起きない場合の処理
+      if(class(df.i)[1] != "try-error"){
+        
+        #データが存在する場合
+        if(nrow(df.i) > 0 && ncol(df.i) > 0){
+          
+          #戻り値に何かデータが入っているかチェック
+          if(nrow(ret) > 0){
+            #入っている場合
+            
+            #長い方の行数
+            max.nrow <- max(nrow(df.i), nrow(ret))
+            
+            #行数を拡張したうえで結合
+            ret <- tibble(df.long(ret, max.nrow), df.long(df.i, max.nrow))
+            
+          }else{
+            #入ってない場合
+            ret <- df.i
+          }
+          
+        }
+      }
+    }
+    
+    #結合したデータを返す
+    return(ret)
+    
+    
+  }
+  
+  
+  return(NULL)
+}

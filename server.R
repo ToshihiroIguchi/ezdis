@@ -23,7 +23,7 @@ shinyServer(function(input, output, session) {
     
     #データ読み込み
     raw.data <- reactive({
-      read.csv(input$file$datapath) %>%
+      read.data(input$file$datapath) %>%
         select_if(is.numeric) #数値のみ選択
     })
     
@@ -66,7 +66,8 @@ shinyServer(function(input, output, session) {
             #計算リストにあるか確認
             if(match(distr.name, input$use) %>% is.na() == FALSE){
               #あてはめ
-              ret[[distr.name]] <- fit.dist(data = data.vec, distr = distr.name)
+              ret[[distr.name]] <- fit.dist(data = data.vec, distr = distr.name, 
+                                            method = input$fitdist.method)
             }
 
             #nameをリストに

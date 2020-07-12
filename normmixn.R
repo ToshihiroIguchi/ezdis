@@ -28,10 +28,6 @@ norm.rate <- function(rate){
   ret <- rate/sum(rate)
 }
 
-#誤差関数
-erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
-erfinv <- function (x) qnorm((1 + x)/2)/sqrt(2)
-
 #確率密度
 dnormmixn <- function(x, mean, sd, rate){
   #エラーチェック
@@ -84,34 +80,80 @@ qnormmixn <- function(p, mean, sd, rate){
   #戻り値
   ret <- rep(NA, length(p))
   
+  #各pの値
   for(i in 1:length(p)){
     
     #最小化する関数
     q.opt <- function(x){(pnormmixn(q = x, mean = mean, sd = sd, rate = rate) - p[i])^2}
     
     #最適化
-    opt.res <- optimize(q.opt, lower = 0, upper = 1)
+    opt.res <- optim(par = mean(mean), q.opt, method = "L-BFGS-B")
     
-    ret[i] <- opt.res$objective
+    #BFGSは変に収束
+    #CGは0.156239 secs
+    #L-BFGS-Bは0.1366379 secs
+    #SANNは0.789161 secs
+    
+    #求めたい値
+    ret[i] <- opt.res$par
     
   }
   
+  #戻り値
   return(ret)
 }
 
 
-qnormmixn(p = 0.5, mean = c(1,5), sd = c(1,2), rate = c(0.5, 0.5))
+#3変量混合正規分布の確率密度
+dnormmix3 <- function(x, mean1, sd1, rate1, mean2, sd2, rate2, mean3, sd3, rate3){
+  dnormmixn(x, mean = c(mean1, mean2, mean3), 
+                   sd = c(sd1, sd2, sd3), rate = c(rate1, rate2, rate3))
 
-
-
-dnormmixn(0.5, c(1,5), c(1,2),c(0.5,0.5))
-
-
-
-
-
-qnormmixn <- function(){
-  
-  
-  #https://www.medi-08-data-06.work/entry/2018/12/18/232204
 }
+
+#3変量混合正規分布の確率密度
+pnormmix3 <- function(p, mean1, sd1, rate1, mean2, sd2, rate2, mean3, sd3, rate3){
+  pnormmixn(p, mean = c(mean1, mean2, mean3), 
+            sd = c(sd1, sd2, sd3), rate = c(rate1, rate2, rate3))
+  
+}
+
+#3変量混合正規分布の確率密度
+qnormmix3 <- function(q, mean1, sd1, rate1, mean2, sd2, rate2, mean3, sd3, rate3){
+  qnormmixn(q, mean = c(mean1, mean2, mean3), 
+            sd = c(sd1, sd2, sd3), rate = c(rate1, rate2, rate3))
+  
+}
+
+
+#4変量混合正規分布の確率密度
+dnormmix4 <- function(x, mean1, sd1, rate1, mean2, sd2, rate2, 
+                      mean3, sd3, rate3, mean4, sd4, rate4){
+  dnormmixn(x, mean = c(mean1, mean2, mean3, mean4), 
+            sd = c(sd1, sd2, sd3, sd4), rate = c(rate1, rate2, rate3, rate4))
+  
+}
+
+#4変量混合正規分布の確率密度
+pnormmix4 <- function(p, mean1, sd1, rate1, mean2, sd2, rate2, 
+                      mean3, sd3, rate3, mean4, sd4, rate4){
+  pnormmixn(p, mean = c(mean1, mean2, mean3, mean4), 
+            sd = c(sd1, sd2, sd3, sd4), rate = c(rate1, rate2, rate3, rate4))
+  
+}
+
+#4変量混合正規分布の確率密度
+qnormmix4 <- function(q, mean1, sd1, rate1, mean2, sd2, rate2, 
+                      mean3, sd3, rate3, mean4, sd4, rate4){
+  qnormmixn(q, mean = c(mean1, mean2, mean3, mean4), 
+            sd = c(sd1, sd2, sd3, sd4), rate = c(rate1, rate2, rate3, rate4))
+}
+
+
+
+
+
+
+
+
+
