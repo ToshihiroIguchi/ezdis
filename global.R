@@ -19,6 +19,7 @@ library(mixtools)
 
 library(goftest) #CVMのomega2からp-valueを計算
 
+
 #Gumbel関数の読み込み
 source("gumbel.R")
 
@@ -52,8 +53,9 @@ gg.hist <- function(vec, bw = NULL){
   #エラーチェック2
   if(!is.vector(vec)){return(NULL)}
   
-  
+  #欠損値を除く
   vec <- na.omit(vec)
+  
   
   #確率密度計算
   dens <- density(vec)
@@ -278,6 +280,12 @@ fit.dist <- function(data, distr = "norm", method = "mle"){
   if(distr == "fatigue"){
     fitdist.start <- list(alpha = 0.5, beta = 1, mu = 0)
     fitdist.lower <- c(0, 0, -Inf)
+  }
+  
+  #ラプラス分布の初期値
+  if(distr == "laplace"){
+    fitdist.start <- list(mu = 0, sigma = 1)
+    fitdist.lower <- c(-Inf, 0)
   }
   
   #ロジスティック分布の初期値
@@ -551,6 +559,26 @@ read.data <- function(file){
 
   #csvの場合
   if(chk.end(".csv", file)){
+    
+    #csvが数値だけのデータの場合はシート全体をベクトル化
+    #1行目からデータを読み込む
+    ret.chk.raw <- read_csv(file, col_names = FALSE)
+    
+    #数値のみ選択
+    ret.chk <- ret.chk.raw %>% select_if(is.numeric) 
+    
+    #文字の列が全くない場合
+    if(ncol(ret.chk.raw) == ncol(ret.chk)){
+      
+      #ベクトル化
+      ret <- tibble(Data = ret.chk %>% as.vec())
+      
+      #戻り値
+      return(ret)
+      
+    }
+    
+    #文字の列が存在する阿合は、項目名から再度読み込んで各列を数値化
     ret <- read_csv(file) %>%
       select_if(is.numeric) #数値のみ選択
     
@@ -561,15 +589,36 @@ read.data <- function(file){
   #エクセル形式の場合
   if(chk.end(".xlsx", file) || chk.end(".xls", file) || chk.end(".xlsm", file)){
 
+    #空のデータフレームを準備
     ret <- tibble()
+    
     #シート名を抜き出す
     excel.sheets <- excel_sheets(file)
 
     #各シートから抜き出す
     for(i in 1:length(excel.sheets)){
       
-      #シートから読み込みし数値列のみ抜き出す
-      df.i <- try(read_excel(file, sheet = i) %>% select_if(is.numeric), silent = FALSE)
+      #シートがすべて数値になっているかチェック
+      df.i.chk.raw <- try(read_excel(file, sheet = i), silent = FALSE)
+      df.i.chk <- try(df.i.chk.raw  %>% select_if(is.numeric), silent = FALSE)
+      df.i.chk.error <- try(ncol(df.i.chk.raw) == ncol(df.i.chk), silent =FALSE)
+      
+      #数値のみ抜き出したデータが、元のデータ数と一致するかチェック
+      if(df.i.chk.error == TRUE){
+        
+        #一致する場合
+        df.i <- data.frame(Data = df.i.chk %>% as.vec())
+        colnames(df.i) <- excel.sheets[i]
+        
+      }else{
+        
+        #シートから読み込みし数値列のみ抜き出す
+        df.i <- try(read_excel(file, sheet = i) %>% select_if(is.numeric), silent = FALSE)
+        
+        
+      }
+      
+
 
       #エラーが起きない場合の処理
       if(class(df.i)[1] != "try-error"){
@@ -579,6 +628,7 @@ read.data <- function(file){
           
           #戻り値に何かデータが入っているかチェック
           if(nrow(ret) > 0){
+            
             #入っている場合
             
             #長い方の行数
@@ -588,6 +638,7 @@ read.data <- function(file){
             ret <- tibble(df.long(ret, max.nrow), df.long(df.i, max.nrow))
             
           }else{
+            
             #入ってない場合
             ret <- df.i
           }
@@ -598,10 +649,14 @@ read.data <- function(file){
     
     #結合したデータを返す
     return(ret)
-    
-    
+
   }
   
-  
+  #該当がなかった場合、空のデータを返す
   return(NULL)
 }
+
+
+
+
+

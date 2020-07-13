@@ -37,7 +37,7 @@ shinyServer(function(input, output, session) {
     observeEvent(is.null.na.null(input$colname), {
 
       #ヒストグラム表示
-      output$gg.hist <- renderPlot({gg.hist(raw.data()[, input$colname])})
+      output$gg.hist <- renderPlot({gg.hist(raw.data()[, input$colname] %>% as.vec())})
       
       #一通り分布にあてはめる
       result <- reactive({
@@ -121,7 +121,11 @@ shinyServer(function(input, output, session) {
       })
       
       #結果表示
-      output$result.plot <- renderPlot({plot(result()[[input$distr.sel]])})
+      output$result.plot <- renderPlot({
+        plot.obj <- try(result()[[input$distr.sel]], silent = TRUE)
+        if(class(plot.obj)[1] == "try-error"){return(NULL)}
+        plot(plot.obj)
+        })
  
       #結果のまとめ表示
       output$summary <- renderText({
