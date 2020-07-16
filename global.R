@@ -29,6 +29,9 @@ source("normmixn.R")
 #パレート分布
 source("Pareto.R")
 
+#多重モードワイブル分布
+source("multiweibull.R")
+
 
 #ベクトルに強制変換
 as.vec <- function(x){
@@ -208,6 +211,26 @@ fit.dist <- function(data, distr = "norm", method = "mle"){
     
     fitdist.start <- list(shape = 1, scale = 1, thres = min(data) - 1)
     fitdist.lower <- c(0, 0, -Inf)
+    
+  }
+  
+  #多重モードワイブル分布の初期値
+  if(distr == "multiweibull"){
+    
+    #x, shape1, scale1, shape2, scale2, rate
+    
+    #一つのワイブルにあてはめたときの値
+    data.1 <- sort(data)[c(1:round(length(data)/2, 0))]
+    data.2 <- sort(data)[c(round(length(data)/2, 0):length(data))]
+    
+    wp1 <- fitdistrplus::fitdist(data.1, "weibull")$estimate
+    wp2 <- fitdistrplus::fitdist(data.2, "weibull")$estimate
+
+    fitdist.start <- list(shape1 = data.1[1], scale1 = data.1[2], 
+                          shape2 = data.2[1], scale2 = data.2[2], rate= 0.5)
+    
+    fitdist.lower <- c(0, 0, 0, 0, 0)
+    fitdist.upper <- c(Inf, Inf, Inf, Inf, 1)
     
   }
   
