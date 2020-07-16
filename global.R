@@ -26,6 +26,9 @@ source("gumbel.R")
 #多変量混合正規分布
 source("normmixn.R")
 
+#パレート分布
+source("Pareto.R")
+
 
 #ベクトルに強制変換
 as.vec <- function(x){
@@ -265,16 +268,30 @@ fit.dist <- function(data, distr = "norm", method = "mle"){
   }
   
   #パレート分布の場合の初期値(EnvStatsを想定)
-  if(distr == "pareto"){
+  if(distr == "Pareto"){
     fitdist.start <- list(shape = 1, location = 1)
     fitdist.lower <- c(0, 0)
   }
   
   #タイプ2パレート分布の場合の初期値
   if(distr == "pareto2"){
-    fitdist.start <- list(shape = 1, scale = 1)
-    fitdist.lower <- c(0, 0)
+    fitdist.start <- list(min = 1, shape = 1, scale = 1)
+    fitdist.lower <- c(-Inf, 0, 0)
   }
+  
+  #タイプ3パレート分布の場合の初期値
+  if(distr == "pareto3"){
+    fitdist.start <- list(min = 1, shape = 1, scale = 1)
+    fitdist.lower <- c(-Inf, 0, 0)
+  }
+  
+  #タイプ4パレート分布の場合の初期値
+  if(distr == "pareto4"){
+    fitdist.start <- list(min = 1, shape1 = 1, shape2 = 1, scale = 1)
+    fitdist.lower <- c(-Inf, 0, 0, 0)
+  }
+  
+  
   
   #バーンバウム　サンダース分布の初期値
   if(distr == "fatigue"){

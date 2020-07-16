@@ -9,7 +9,6 @@ library(DT)
 #分布関数のデータ読み込み
 dist <- read.csv("dist.csv")
 
-
 #Maximum upload size exceededを回避
 #100MB設定
 #https://github.com/rstudio/shiny-examples/blob/master/066-upload-file/server.R
