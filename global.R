@@ -17,6 +17,9 @@ library(actuar)
 library(EnvStats)
 library(mixtools)
 
+#library(truncnorm)
+
+
 library(goftest) #CVMのomega2からp-valueを計算
 
 
@@ -217,18 +220,24 @@ fit.dist <- function(data, distr = "norm", method = "mle"){
   #多重モードワイブル分布の初期値
   if(distr == "multiweibull"){
     
-    #x, shape1, scale1, shape2, scale2, rate
+    #最小値がゼロ以下だとエラー
+    if(min(data) <= 0){
+      return(error.ret(Sys.time()))
+    }
     
-    #一つのワイブルにあてはめたときの値
+    #小さい値と大きな値にわける
     data.1 <- sort(data)[c(1:round(length(data)/2, 0))]
     data.2 <- sort(data)[c(round(length(data)/2, 0):length(data))]
     
+    #小さい値と大きな値でWeibull分布にフィッティングしてパラメータ推定
     wp1 <- fitdistrplus::fitdist(data.1, "weibull")$estimate
     wp2 <- fitdistrplus::fitdist(data.2, "weibull")$estimate
 
+    #推定したパラメータで二つのワイブルの初期値をとする
     fitdist.start <- list(shape1 = data.1[1], scale1 = data.1[2], 
                           shape2 = data.2[1], scale2 = data.2[2], rate= 0.5)
     
+    #上限と下限設定
     fitdist.lower <- c(0, 0, 0, 0, 0)
     fitdist.upper <- c(Inf, Inf, Inf, Inf, 1)
     
@@ -313,8 +322,6 @@ fit.dist <- function(data, distr = "norm", method = "mle"){
     fitdist.start <- list(min = 1, shape1 = 1, shape2 = 1, scale = 1)
     fitdist.lower <- c(-Inf, 0, 0, 0)
   }
-  
-  
   
   #バーンバウム　サンダース分布の初期値
   if(distr == "fatigue"){
@@ -448,6 +455,17 @@ fit.dist <- function(data, distr = "norm", method = "mle"){
     
     
   } 
+  
+  #4変量混合正規分布の場合の初期値
+  if(distr == "tnorm"){
+    
+    fitdist.start <- list(mean = mean(data), sd = sd(data), a= min(data), b = max(data))
+    fitdist.lower <- c(-Inf, 0, -Inf, -Inf)
+
+    
+    
+  } 
+  
   
   #一様分布の場合の初期値
   if(distr == "unif"){
