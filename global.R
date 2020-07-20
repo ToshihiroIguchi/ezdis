@@ -657,7 +657,8 @@ read.data <- function(file){
     for(i in 1:length(excel.sheets)){
       
       #シートがすべて数値になっているかチェック
-      df.i.chk.raw <- try(read_excel(file, sheet = i), silent = FALSE)
+      df.i.chk.raw <- try(read_excel(file, sheet = i, col_names = FALSE), 
+                          silent = FALSE) #項目名はなし
       df.i.chk <- try(df.i.chk.raw  %>% select_if(is.numeric), silent = FALSE)
       df.i.chk.error <- try(ncol(df.i.chk.raw) == ncol(df.i.chk), silent =FALSE)
       
