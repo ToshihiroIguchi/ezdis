@@ -217,6 +217,12 @@ fit.dist <- function(data, distr = "norm", method = "mle"){
     
   }
   
+  #逆ワイブル分布の場合の初期値
+  if(distr == "rweibull"){
+    fitdist.lower <- c(-Inf, 0, 0)
+  }
+  
+  
   #多重モードワイブル分布の初期値
   if(distr == "multiweibull"){
     
@@ -715,6 +721,155 @@ read.data <- function(file){
   return(NULL)
 }
 
+#確率紙にプロット
+plot_paper <- function(result, rank = "median", method = "norm"){
+  
+  #参考
+  #http://aoki2.si.gunma-u.ac.jp/R/npp2.html
+  #http://aoki2.si.gunma-u.ac.jp/R/weibull.html
+  
+  #エラーチェック
+  if(is.null(result)){return(result)}
+  if(class(result)[1] != "fitdist"){return(NULL)}
+  
+  #小さい順に並んだデータを抜き出す
+  data <- result$data %>% sort
+  
+  #メジアンランクの場合
+  if(rank == "median"){
+    mol_plus <- -0.3  #分子
+    den_plus <- 0.4   #分母
+  }
+  
+  #平均ランクの場合
+  if(rank == "mean"){
+    mol_plus <- 0  #分子
+    den_plus <- 1   #分母
+  }
+  
+  #不信頼度
+  rank_i <- c(1:length(data))
+  rank_n <- length(data)
+  fi <- (rank_i + mol_plus)/(rank_n + den_plus)
+  
+  #縦軸のFのベクトルを作成する関数
+  make.f.vec <- function(f.min, length = NULL){
+    
+    #スケールケーズの最小値の自然対数
+    f.min.log <- floor(log10(f.min))
+    
+    #スケールに使用する数値作成
+    if(is.null(length)){
+      f.vec.small <- 10^c(f.min.log : -1)
+    }else{
+      f.vec.small <- 10^seq(f.min.log, -1, length = length)
+    }
+    
+    
+    f.vec.large <- 1 - f.vec.small
+    f.vec.std <- c(0.2, 0.5, 0.632)
+    f.vec <- sort(c(f.vec.small, f.vec.std, f.vec.large))
+    
+    #戻り値
+    return(f.vec)
+  }
+  
+  #縦軸のベクトルを作成
+  probs <- make.f.vec(min(fi))
+  
+  #ワイブル分布の尺度に変更
+  weib <- function(p) log10(log10(1/(1-p)))
+  
+  #fitdistの結果とpベクトルから、qベクトルを作る関数定義
+  qfit <- function(result, p){
+    
+    #エラーチェック
+    if(class(result)[1] != "fitdist"){return(NULL)}
+    
+    #pの値をチェック
+    if(min(p) <= 0 || max(p) >=1){
+      stop("p must be greater than 0 and less than 1.")
+    }
+    
+    #関数を作成
+    q.func <- paste0("q", result$distname)
+    
+    #最適値を表示
+    est.vec <- result$estimate
+    
+    #パラメータを作る
+    est.param <- NULL
+    for(i in 1:length(est.vec)){
+      #iのパラメータを追加
+      est.param <- paste0(est.param, names(est.vec)[i], "=", est.vec[i])
+      
+      #最後でなければコンマを加える
+      if(i < length(est.vec)){est.param <- paste0(est.param, ", ")}
+    }
+    
+    
+    eval(parse(text = paste0(
+      "ret <- ", q.func, "(p, ", est.param, ")"
+    )))
+    
+    return(ret)
+    
+  }
+  
+  #pベクトルを作る
+  p.vec <- make.f.vec(min(fi), length = 100)
+  
+  #qベクトルを作る
+  q.vec <- qfit(result, p.vec)
+  
+  #正規確率か対数正規確率の場合
+  if(method == "norm" || method == "lnorm"){
+    plot.y <- qnorm(c(min(probs), max(probs)))
+    point.y <- qnorm(fi)
+    axis.y <- qnorm(probs)
+    p.vec.y <- qnorm(p.vec)
+  }
+  
+  #ワイブルかガンベルの場合
+  if(method == "weibull" || method == "gumbel"){
+    plot.y <- weib(c(min(probs), max(probs)))
+    point.y <- weib(fi)
+    axis.y <- weib(probs)
+    p.vec.y <- weib(p.vec)
+  }
+  
+  #対数正規確率かワイブルの場合(x軸が対数)
+  if(method == "lnorm" || method == "weibull"){
+    
+    #対数スケールだと0以下はプロットできないので、NULLを返す
+    if(min(data) <= 0){
+      return(NULL)
+    }
+    
+    #x軸を対数スケール
+    plot.log <- "x"
+  }else{
+    #x軸をリニア
+    plot.log <- ""
+  }
+  
+  
+  #図を作成
+  plot(c(data[1], data[rank_n]), plot.y, 
+       log = plot.log,
+       type = "n", yaxt = "n",
+       xlab = "Data", ylab = "Probability")
+  
+  #データ点を打つ
+  points(data, point.y)
+  
+  #縦軸の確率を表示
+  axis(2, axis.y, probs*100)
+  
+  #フィッテングした関数の線を引く
+  lines(q.vec, p.vec.y, col = "Red")
+  
+}
 
 
 

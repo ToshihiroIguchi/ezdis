@@ -138,6 +138,12 @@ shinyServer(function(input, output, session) {
         gofstat(result()[[input$distr.sel]]) %>% 
           capture.output() %>% paste(by = "\n")
       })
+      
+      #確率紙プロット
+      output$plot_paper <- renderPlot({
+        plot_paper(result()[[input$distr.sel]], method = input$paper.method)
+      })
+      
 
     })
     
