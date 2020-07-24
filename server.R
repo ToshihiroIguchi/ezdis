@@ -15,6 +15,19 @@ dist <- read.csv("dist.csv")
 #https://stackoverflow.com/questions/18037737/how-to-change-maximum-upload-size-exceeded-restriction-in-shiny-and-save-user
 options(shiny.maxRequestSize = 100*1024^2)
 
+#確率紙
+paper.method <- c("norm", "lnorm", "gumbel", "weibull", "exp")
+names(paper.method) <- c("Normal probability plot",
+                         "Log normal probability plot",
+                         "Gumbel probability plot",
+                         "Weibull probability plot",
+                         "Exponential probability paper")
+paper.method.pos <- paper.method[-c(2, 4)]
+
+#ランクの計算方法
+paper.rank <- c("median", "mean")
+names(paper.rank) <- c("Median rank", "Mean rank")
+
 
 shinyServer(function(input, output, session) {
   
@@ -34,15 +47,43 @@ shinyServer(function(input, output, session) {
     
     #データ選択されたら
     observeEvent(is.null.na.null(input$colname), {
-
+      
+      #データを作る
+      vec.data <- reactive({
+        ret <- try(raw.data()[, input$colname] %>% na.omit() %>% as.vec(), silent = TRUE)
+        if(class(ret)[1] == "try-error"){ret <- NULL}
+        return(ret)
+      })
+      
+      #どの確率紙を使うか
+      output$paper.method <- renderUI({
+        
+        if(is.null(vec.data() )){return(NULL)}
+        
+        if(min(vec.data()) > 0){
+          selectInput("paper.method", label = "Probability plot",
+                      choices = paper.method)
+        }else{
+          selectInput("paper.method", label = "Probability plot",
+                      choices = paper.method.pos)
+        }
+      })
+      
+      #確率紙のプロッティング公式
+      output$paper.rank <- renderUI({
+        selectInput("paper.rank", label = "Rank calculation",
+                    choices = c("a","b"))
+        
+      })
+      
       #ヒストグラム表示
-      output$gg.hist <- renderPlot({gg.hist(raw.data()[, input$colname] %>% as.vec())})
+      output$gg.hist <- renderPlot({gg.hist(vec.data() )})
       
       #一通り分布にあてはめる
       result <- reactive({
         
         #解析するデータを準備
-        data.vec <-  raw.data()[, input$colname] %>% na.omit() %>% as.vec()
+        data.vec <-  vec.data()
         
         #戻り値をリストにする
         ret <- list()

@@ -731,6 +731,7 @@ plot_paper <- function(result, rank = "median", method = "norm"){
   #エラーチェック
   if(is.null(result)){return(result)}
   if(class(result)[1] != "fitdist"){return(NULL)}
+  if(is.null(rank) || is.null(method)){return(NULL)}
   
   #小さい順に並んだデータを抜き出す
   data <- result$data %>% sort
@@ -779,6 +780,10 @@ plot_paper <- function(result, rank = "median", method = "norm"){
   
   #ワイブル分布の尺度に変更
   weib <- function(p) log10(log10(1/(1-p)))
+  
+  #指数確率紙の尺度に変更
+  #http://www.fml.t.u-tokyo.ac.jp/~sakai/kougi/ProbSystem/ProbPaper/probpaper.htm
+  expp <- function(p) log(1/(1-p))
   
   #fitdistの結果とpベクトルから、qベクトルを作る関数定義
   qfit <- function(result, p){
@@ -837,6 +842,16 @@ plot_paper <- function(result, rank = "median", method = "norm"){
     axis.y <- weib(probs)
     p.vec.y <- weib(p.vec)
   }
+  
+  
+  #指数の場合
+  if(method == "exp"){
+    plot.y <- expp(c(min(probs), max(probs)))
+    point.y <- expp(fi)
+    axis.y <- expp(probs)
+    p.vec.y <- expp(p.vec)
+  }
+  
   
   #対数正規確率かワイブルの場合(x軸が対数)
   if(method == "lnorm" || method == "weibull"){
