@@ -19,15 +19,7 @@ names(fitdist.method) <- c("maximum likelihood estimation",
                            "maximum goodness-of-fit estimation",
                            "maximum spacing estimation")
 
-#確率紙
-paper.method <- c("norm", "lnorm", "gumbel", "weibull")
-names(paper.method) <- c("Normal probability plot",
-                         "Log normal probability plot",
-                         "Gumbel probability plot",
-                         "Weibull probability plot")
-paper.method.pos <- paper.method[c(1, 3)]
 
-  
 shinyUI(fluidPage(
 
   sidebarLayout(
@@ -69,8 +61,10 @@ shinyUI(fluidPage(
                            ),
                   
                   tabPanel("Paper",
-                           selectInput("paper.method", label = "Probability plot",
-                                       choices = paper.method),
+                           #selectInput("paper.method", label = "Probability plot",
+                          #             choices = paper.method),
+                          
+                          htmlOutput("paper.method"),
                            
                            plotOutput("plot_paper")),
                   
