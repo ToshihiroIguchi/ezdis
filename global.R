@@ -17,8 +17,6 @@ library(actuar)
 library(EnvStats)
 library(mixtools)
 
-#library(truncnorm)
-
 
 library(goftest) #CVMのomega2からp-valueを計算
 
@@ -241,11 +239,11 @@ fit.dist <- function(data, distr = "norm", method = "mle"){
 
     #推定したパラメータで二つのワイブルの初期値をとする
     fitdist.start <- list(shape1 = data.1[1], scale1 = data.1[2], 
-                          shape2 = data.2[1], scale2 = data.2[2], rate= 0.5)
+                          shape2 = data.2[1], scale2 = data.2[2])
     
     #上限と下限設定
-    fitdist.lower <- c(0, 0, 0, 0, 0)
-    fitdist.upper <- c(Inf, Inf, Inf, Inf, 1)
+    fitdist.lower <- c(0, 0, 0, 0)
+    fitdist.upper <- c(Inf, Inf, Inf, Inf)
     
   }
   
@@ -881,6 +879,7 @@ plot_paper <- function(result, rank = "median", method = "norm"){
   #縦軸の確率を表示
   axis(2, axis.y, probs*100)
   
+
   #フィッテングした関数の線を引く
   lines(q.vec, p.vec.y, col = "Red")
   

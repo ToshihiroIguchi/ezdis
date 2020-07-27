@@ -1,21 +1,21 @@
 #多重モードワイブル分布
 
 #確率密度
-dmultiweibull <- function(x, shape1, scale1, shape2, scale2, rate){
-  ret <- rate*dweibull(x, shape = shape1, scale = scale1) + 
-    (1 - rate)*dweibull(x, shape = shape2, scale = scale2)
+dmultiweibull <- function(x, shape1, scale1, shape2, scale2){
+  ret <- (exp(-((x/scale1)^shape1) - ((x/scale2)^shape2))) *
+    ((shape1 * (x / scale1)^shape1) + (shape2 * (x / scale2)^shape2))/x
   return(ret)
 }
 
 #累積分布
-pmultiweibull <- function(q, shape1, scale1, shape2, scale2, rate){
-  ret <- rate*pweibull(q, shape = shape1, scale = scale1) + 
-    (1 - rate)*pweibull(q, shape = shape2, scale = scale2)
-  return(ret)
+pmultiweibull <- function(q, shape1, scale1, shape2, scale2){
+  ret <- 1 - (exp(-(q/scale1)^shape1)) * (exp(-(q/scale2)^shape2)) 
+  
+   return(ret)
 }
 
 #確率点
-qmultiweibull <- function(p, shape1, scale1, shape2, scale2, rate){
+qmultiweibull <- function(p, shape1, scale1, shape2, scale2){
   
   #戻り値
   ret <- rep(NA, length(p))
@@ -24,21 +24,33 @@ qmultiweibull <- function(p, shape1, scale1, shape2, scale2, rate){
   for(i in 1:length(p)){
     
     #最小化する関数
+    #xは負の値を取らないのでexpで変換
     q.opt <- function(x){
-      (pmultiweibull(q = x, shape1 = shape1, scale1 = scale1, 
-                     shape2 = shape2, scale2 = scale2, rate = rate) - p[i])^2
+      ret <- try(
+        log((pmultiweibull(q = exp(x), 
+                      shape1 = shape1, scale1 = scale1, 
+                      shape2 = shape2, scale2 = scale2) - p[i])^2), 
+        
+        silent = TRUE)
+      
+      if(class(ret)[1] == "try-error"){ret <- 1e10}
+      if(is.na(ret)){ret <- 1e10}
+      
+      return(ret)
       }
     
+
+    
     #最適化
-    opt.res <- optim(par = mean(c(scale1, scale2)), q.opt, method = "L-BFGS-B")
+    #L-BFGS-B, CG
+    opt.res <- optim(par = log(mean(scale1, scale2))-3 , q.opt, method = "L-BFGS-B")
     
     #求めたい値
-    ret[i] <- opt.res$par
+    ret[i] <- exp(opt.res$par)
     
   }
   
   #戻り値
   return(ret)
 }
-
 

@@ -72,8 +72,7 @@ shinyServer(function(input, output, session) {
       #確率紙のプロッティング公式
       output$paper.rank <- renderUI({
         selectInput("paper.rank", label = "Rank calculation",
-                    choices = c("a","b"))
-        
+                    choices = paper.rank)
       })
       
       #ヒストグラム表示
@@ -182,7 +181,9 @@ shinyServer(function(input, output, session) {
       
       #確率紙プロット
       output$plot_paper <- renderPlot({
-        plot_paper(result()[[input$distr.sel]], method = input$paper.method)
+        plot_paper(result()[[input$distr.sel]], 
+                   method = input$paper.method,
+                   rank = input$paper.rank)
       })
       
 
