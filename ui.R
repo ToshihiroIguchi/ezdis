@@ -61,12 +61,9 @@ shinyUI(fluidPage(
                            ),
                   
                   tabPanel("Paper",
-                           #selectInput("paper.method", label = "Probability plot",
-                          #             choices = paper.method),
-                          
                           htmlOutput("paper.method"),
-                           
-                           plotOutput("plot_paper")),
+                          htmlOutput("paper.rank"),
+                          plotOutput("plot_paper")),
                   
                   tabPanel("Setting",
                            checkboxGroupInput("use", label = "Use distibution",
@@ -82,12 +79,7 @@ shinyUI(fluidPage(
                            verbatimTextOutput("fit.dist.res")
                            )
       )
-      
-      
-      
-      
-      
-      
+
     )
   )
 ))
