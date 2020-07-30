@@ -43,7 +43,8 @@ shinyUI(fluidPage(
       tabsetPanel(type = "tabs",
                   
                   tabPanel("Histgram", 
-                           plotOutput("gg.hist")
+                           plotOutput("gg.hist"),
+                           verbatimTextOutput("vec.summary")
                            ),
                   
                   tabPanel("Table", 

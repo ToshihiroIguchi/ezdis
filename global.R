@@ -366,29 +366,33 @@ fit.dist <- function(data, distr = "norm", method = "mle"){
     fitdist.start <- list(df1 = 1, df2 = 1, ncp = 1)
   }
   
+
   #2変量混合正規分布の場合の初期値
-  if(distr == "normMix"){
+  if(distr == "normmix2"){
     
     #EMアルゴリズム
-    normalmixEM.res <- try(normalmixEM(data), silent = TRUE)
+    normalmixEM.res <- try(normalmixEM(data, k = 2), silent = TRUE)
     
     #エラーの場合は止める
     if(class(normalmixEM.res)[1] == "try-error"){
       return(error.ret(Sys.time()))
     }
     
+    
     fitdist.start <- list(
       mean1 = normalmixEM.res$mu[1], 
       sd1 = normalmixEM.res$sigma[1],
+      rate1 = normalmixEM.res$lambda[1],
+      
       mean2 = normalmixEM.res$mu[2],
       sd2 = normalmixEM.res$sigma[2],
-      p.mix = 1-normalmixEM.res$lambda[1])
+      rate2 = normalmixEM.res$lambda[2])
     
     
-    fitdist.lower <- c(-Inf, 0, -Inf, 0, 0)
-    fitdist.upper <- c(Inf, Inf, Inf, Inf, 1)
+    fitdist.lower <- c(-Inf, 0, 0, -Inf, 0, 0)
+    fitdist.upper <- c(Inf, Inf, 1, Inf, Inf, 1)
     
-
+    
   }
   
   #3変量混合正規分布の場合の初期値
@@ -552,6 +556,7 @@ summary.fit.dist <- function(data){
         
         
         #離散分布の場合
+        "Chi-squared" = null.na(gofstat.res$chisq)[1],
         "Chi-squared p-value" = null.na(gofstat.res$chisqpvalue)[1],
         
         
@@ -715,7 +720,7 @@ read.data <- function(file){
 
   }
   
-  #該当がなかった場合、空のデータを返す
+  #該当がなかった場合、NAを返す
   return(NULL)
 }
 
@@ -884,6 +889,50 @@ plot_paper <- function(result, rank = "median", method = "norm"){
   lines(q.vec, p.vec.y, col = "Red")
   
 }
+
+#ロジット
+logit <- function(x) log(x / (1 - x))
+
+#数値のまとめ表示
+vec.summary <- function(vec){
+  
+  #エラーチェック
+  if(is.null(vec)){return(NULL)}
+  if(!is.vector(vec)){return(NULL)}
+  if(!is.numeric(vec)){return(NULL)}
+  
+  #NA除去
+  vec <- na.omit(vec)
+  
+  #結果を入れる入れ物
+  res <- list()
+  
+  #結果を格納
+  res$n <- length(vec)
+  res$Mean <- mean(vec)
+  res$SD <- sd(vec)
+  res$VAR <- var(vec)
+  res$Skewness <- skewness(vec)
+  res$Kurtosis <- kurtosis(vec)
+  res$Median <- median(vec)
+  res$Max <- max(vec)
+  res$Min <- min(vec)
+  
+  #結果を結合
+  ret <- ""
+  
+  for(i in 1:length(res)){
+    ret0 <- paste(names(res)[i], "=", 
+                  signif(res[[i]], digits = 4),
+                  ", ")
+    ret <- paste0(ret, ret0)
+  }
+  
+  #戻り値
+  return(ret)
+}
+
+
 
 
 

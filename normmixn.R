@@ -80,28 +80,66 @@ qnormmixn <- function(p, mean, sd, rate){
   #戻り値
   ret <- rep(NA, length(p))
   
+  #初期値を決める
+  start.par <- min(mean)
+
   #各pの値
   for(i in 1:length(p)){
-    
+
     #最小化する関数
-    q.opt <- function(x){(pnormmixn(q = x, mean = mean, sd = sd, rate = rate) - p[i])^2}
+    q.opt <- function(x){
+      
+      ret <- (pnormmixn(q = x, mean = mean, sd = sd, rate = rate) - p[i])^2
+      
+      #対数変換 ret=0 だと-Infになってしまうので、小さな数を足す
+      ret <- log(ret + 1e-10)
     
-    #最適化
-    opt.res <- optim(par = mean(mean), q.opt, method = "L-BFGS-B")
+      return(ret)
+    }
+    
+    #最適化(L-BFGS-B)
+    opt.res <- optim(par = start.par, q.opt, method = "L-BFGS-B")
     
     #BFGSは変に収束
     #CGは0.156239 secs
     #L-BFGS-Bは0.1366379 secs
     #SANNは0.789161 secs
+
+    
     
     #求めたい値
     ret[i] <- opt.res$par
     
+    #初期値を変更
+    start.par <- opt.res$par
   }
   
   #戻り値
   return(ret)
 }
+
+
+#2変量混合正規分布の確率密度
+dnormmix2 <- function(x, mean1, sd1, rate1, mean2, sd2, rate2){
+  dnormmixn(x, mean = c(mean1, mean2), 
+            sd = c(sd1, sd2), rate = c(rate1, rate2))
+  
+}
+
+#3変量混合正規分布の確率密度
+pnormmix2 <- function(p, mean1, sd1, rate1, mean2, sd2, rate2){
+  pnormmixn(p, mean = c(mean1, mean2), 
+            sd = c(sd1, sd2), rate = c(rate1, rate2))
+  
+}
+
+#3変量混合正規分布の確率密度
+qnormmix2 <- function(q, mean1, sd1, rate1, mean2, sd2, rate2){
+  qnormmixn(q, mean = c(mean1, mean2), 
+            sd = c(sd1, sd2), rate = c(rate1, rate2))
+  
+}
+
 
 
 #3変量混合正規分布の確率密度

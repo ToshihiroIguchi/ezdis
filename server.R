@@ -35,15 +35,29 @@ shinyServer(function(input, output, session) {
     
     #データ読み込み
     raw.data <- reactive({
-      read.data(input$file$datapath) %>%
-        select_if(is.numeric) #数値のみ選択
-    })
+      try(
+        read.data(input$file$datapath) %>%
+          select_if(is.numeric) #数値のみ選択
+        , silent = TRUE)
+      })
     
     #データ選択
     output$colname <- renderUI({
-      selectInput("colname", label = "Use data",
-                choices = c(NA, colnames(raw.data())))
-      })
+      if(class(raw.data())[1] != "try-error"){
+        selectInput("colname", label = "Use data", choices = c(NA, colnames(raw.data())))
+      }else{
+        NULL
+      }
+    })
+    
+    #ファイルの内容がおかしかったらエラーメッセージ
+    if(class(raw.data())[1] == "try-error"){
+      showModal(modalDialog(
+        title = "Error",
+        "Failed to read the numerical data from the file. Check the contents of the file.",
+        easyClose = TRUE
+      ))
+    }
     
     #データ選択されたら
     observeEvent(is.null.na.null(input$colname), {
@@ -77,6 +91,9 @@ shinyServer(function(input, output, session) {
       
       #ヒストグラム表示
       output$gg.hist <- renderPlot({gg.hist(vec.data() )})
+      
+      #数値のまとめ表示
+      output$vec.summary <- renderText({vec.summary(vec.data())})
       
       #一通り分布にあてはめる
       result <- reactive({
