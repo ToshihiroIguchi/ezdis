@@ -5,6 +5,9 @@ library(tibble)
 library(readr)
 library(readxl)
 
+library(R.utils)
+
+
 library(fitdistrplus)
 library(ismev)
 
@@ -152,7 +155,7 @@ adpval <- function(n, An){
 }
 
 #分布関数にフィッティング
-fit.dist <- function(data, distr = "norm", method = "mle"){
+fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   
   #エラーチェック
   if(is.null(data)){return(NULL)}
@@ -492,10 +495,17 @@ fit.dist <- function(data, distr = "norm", method = "mle"){
     
     #フィッティング
     ret <- suppressWarnings(
-      try(fitdist(data = data, distr = distr, method = method, 
+      try(
+        withTimeout({
+          fitdist(data = data, distr = distr, method = method, 
                   start = fitdist.start, fix.arg = fix.arg,
                   lower = fitdist.lower, upper = fitdist.upper,
-                  optim.method = optim.method), silent = FALSE)
+                  optim.method = optim.method)
+          
+        }, timeout = timeout, onTimeout = "error")
+        
+        
+        , silent = FALSE)
     )
 
     #戻り値

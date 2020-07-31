@@ -73,7 +73,9 @@ shinyUI(fluidPage(
                                        inline = TRUE),
                            
                            selectInput("fitdist.method", label = "Fitting method",
-                                       choices = fitdist.method)
+                                       choices = fitdist.method),
+                           
+                           numericInput("timeout", label = "Timeout", value = 30, min = 1, step = 1)
                            
                            ),
                   tabPanel("Debug",

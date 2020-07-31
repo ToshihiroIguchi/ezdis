@@ -5,7 +5,6 @@ library(dplyr)
 
 library(DT)
 
-
 #分布関数のデータ読み込み
 dist <- read.csv("dist.csv")
 
@@ -121,9 +120,12 @@ shinyServer(function(input, output, session) {
 
             #計算リストにあるか確認
             if(match(distr.name, input$use) %>% is.na() == FALSE){
+              
               #あてはめ
               ret[[distr.name]] <- fit.dist(data = data.vec, distr = distr.name, 
-                                            method = input$fitdist.method)
+                                            method = input$fitdist.method,
+                                            timeout = input$timeout)
+              
             }
 
             #nameをリストに
