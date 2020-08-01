@@ -942,6 +942,55 @@ vec.summary <- function(vec){
   return(ret)
 }
 
+#統計量とパラメータ表示
+fitdist_summary <- function(result){
+  
+  #エラーチェック
+  if(is.null(result)){return(NULL)}
+  if(class(result)[1] != "fitdist"){return(NULL)}
+  if(result$estimate %>% na.omit() %>% length() == 0){return(NULL)} #パラメータ推定に失敗した場合
+  
+  #適合度の統計量計算
+  gofstat.res <- try(gofstat(result), silent = TRUE)
+  
+  #パラメータを整理
+  ret1 <- "Parameters :"
+  for(i in 1:length(result$estimate)){
+    ret1 <- paste0(ret1, "\n", names(result$estimate)[i], " = ", result$estimate[i] %>% signif(4))
+  }
+  ret1 <- paste0(ret1, "\n")
+  
+  #retベクトルにパラメータと統計量を格納
+  ret <- NULL
+  ret[1] <- ret1[1]
+  
+  ret[2] <- paste0("n = ", result$n, ", ",
+                   "AIC = ", null.na(result$aic)[1] %>% round(2),  ", ",
+                   "BIC = ", null.na(result$bic)[1] %>% round(2), ", ",
+                   "log likelihood = ", null.na(result$loglik)[1] %>% round(2))
+  
+  ret[3] <- paste0("Kolmogorov-Smirnov, ",
+                   "D = ", null.na(gofstat.res$ks)[1] %>% signif(4), ", ",
+                   "p-value = ", kspval(result$n, gofstat.res$ks)[1] %>% signif(4))
+  
+  ret[4] <- paste0("Cramer-von Mises, ",
+                   "omega2 = ", null.na(gofstat.res$cvm)[1] %>% signif(4), ", ",
+                   "p-value = ", cvmpval(result$n, gofstat.res$cvm)[1] %>% signif(4))
+  
+  ret[5] <- paste0("Anderson-Darling, ",
+                   "An = ", null.na(gofstat.res$ad)[1] %>% signif(4), ", ",
+                   "p-value = ", adpval(result$n, gofstat.res$ad)[1] %>% signif(4))
+  
+  ret[6] <- paste0("Chi-squared = ",null.na(gofstat.res$chisq)[1] %>% signif(4), ", ",
+                   "p-value = ", null.na(gofstat.res$chisqpvalue)[1] %>% signif(4))
+  
+  
+  #改行で結合
+  ret <- paste0(ret, sep = "\n")
+  
+  #cat(ret)
+  return(ret)
+}
 
 
 

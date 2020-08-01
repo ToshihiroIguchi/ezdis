@@ -57,8 +57,7 @@ shinyUI(fluidPage(
                   
                   tabPanel("Result",
                            plotOutput("result.plot"),
-                           verbatimTextOutput("summary"),
-                           verbatimTextOutput("gofstat")
+                           verbatimTextOutput("summary")
                            ),
                   
                   tabPanel("Paper",

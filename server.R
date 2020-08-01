@@ -187,16 +187,10 @@ shinyServer(function(input, output, session) {
  
       #結果のまとめ表示
       output$summary <- renderText({
-        summary(result()[[input$distr.sel]]) %>% 
-          capture.output() %>% paste(by = "\n") #summaryはlistなので、表示できる形に変換
+        fitdist_summary(result()[[input$distr.sel]])
         
-        })
-      
-      #結果のまとめ表示2
-      output$gofstat <- renderText({
-        gofstat(result()[[input$distr.sel]]) %>% 
-          capture.output() %>% paste(by = "\n")
       })
+      
       
       #確率紙プロット
       output$plot_paper <- renderPlot({
