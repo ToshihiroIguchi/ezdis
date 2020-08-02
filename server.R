@@ -180,8 +180,17 @@ shinyServer(function(input, output, session) {
       
       #結果表示
       output$result.plot <- renderPlot({
+        
+        #結果のエラー処理。エラーの場合はNULL
         plot.obj <- try(result()[[input$distr.sel]], silent = TRUE)
         if(class(plot.obj)[1] == "try-error"){return(NULL)}
+        
+        #パラメータ推定に失敗した場合
+        if(plot.obj$estimate %>% na.omit() %>% length() == 0){
+          return(NULL)
+        } 
+        
+        #結果表示
         plot(plot.obj)
         })
  
@@ -191,7 +200,12 @@ shinyServer(function(input, output, session) {
         
       })
       
-      
+      #結果のまとめ表示2
+      output$summary2 <- renderText({
+        fitdist_summary(result()[[input$distr.sel]])
+        
+      })
+        
       #確率紙プロット
       output$plot_paper <- renderPlot({
         plot_paper(result()[[input$distr.sel]], 

@@ -746,6 +746,11 @@ plot_paper <- function(result, rank = "median", method = "norm"){
   if(class(result)[1] != "fitdist"){return(NULL)}
   if(is.null(rank) || is.null(method)){return(NULL)}
   
+  #パラメータ推定に失敗した場合
+  if(result$estimate %>% na.omit() %>% length() == 0){
+    return(NULL)
+  } 
+  
   #小さい順に並んだデータを抜き出す
   data <- result$data %>% sort
   
@@ -948,7 +953,11 @@ fitdist_summary <- function(result){
   #エラーチェック
   if(is.null(result)){return(NULL)}
   if(class(result)[1] != "fitdist"){return(NULL)}
-  if(result$estimate %>% na.omit() %>% length() == 0){return(NULL)} #パラメータ推定に失敗した場合
+  
+  #パラメータ推定に失敗した場合
+  if(result$estimate %>% na.omit() %>% length() == 0){
+    return("Parameter estimation failed.")
+  } 
   
   #適合度の統計量計算
   gofstat.res <- try(gofstat(result), silent = TRUE)

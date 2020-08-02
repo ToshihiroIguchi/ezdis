@@ -61,9 +61,13 @@ shinyUI(fluidPage(
                            ),
                   
                   tabPanel("Paper",
-                          htmlOutput("paper.method"),
-                          htmlOutput("paper.rank"),
-                          plotOutput("plot_paper")),
+                           fluidRow(
+                             column(6, htmlOutput("paper.method")),
+                             column(6, htmlOutput("paper.rank"))
+                           ),
+                          plotOutput("plot_paper"),
+                          verbatimTextOutput("summary2")
+                          ),
                   
                   tabPanel("Setting",
                            checkboxGroupInput("use", label = "Use distibution",
@@ -74,7 +78,8 @@ shinyUI(fluidPage(
                            selectInput("fitdist.method", label = "Fitting method",
                                        choices = fitdist.method),
                            
-                           numericInput("timeout", label = "Timeout", value = 30, min = 1, step = 1)
+                           numericInput("timeout", label = "Seconds to timeout", 
+                                        value = 30, min = 1, step = 1)
                            
                            ),
                   tabPanel("Debug",
