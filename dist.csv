@@ -31,6 +31,7 @@ normmix2,mixture of 2 normal distributions,TRUE,
 normmix3,mixture of 3 normal distributions,TRUE,
 normmix4,mixture of 4 normal distributions,FALSE,
 tnorm,truncated normal distribution,TRUE,
+boxcox,Box-Cox distribution,FALSE,–Þ“x‚ª’á‚¢
 unif,uniform distribution,TRUE,
 chisq,chi-squared distribution,FALSE,
 t,Student t distribution,FALSE,

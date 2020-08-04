@@ -104,8 +104,6 @@ qnormmixn <- function(p, mean, sd, rate){
     #CGは0.156239 secs
     #L-BFGS-Bは0.1366379 secs
     #SANNは0.789161 secs
-
-    
     
     #求めたい値
     ret[i] <- opt.res$par

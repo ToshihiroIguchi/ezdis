@@ -20,6 +20,8 @@ library(actuar)
 library(EnvStats)
 library(mixtools)
 
+#library(rmutil)
+
 
 library(goftest) #CVMのomega2からp-valueを計算
 
@@ -35,6 +37,9 @@ source("Pareto.R")
 
 #多重モードワイブル分布
 source("multiweibull.R")
+
+#Box-Cox分布
+source("boxcox.R")
 
 
 #ベクトルに強制変換
@@ -345,6 +350,19 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   #ロジスティック分布の初期値
   if(distr == "llogis"){
     fitdist.lower <- c(0, 0)
+  }
+  
+  #BoxCox分布の初期値
+  if(distr == "boxcox"){
+    
+    fitdist.start <- list(
+      m = max(mean(data), 1e-3),
+      s = sd(data),
+      f = 1
+    )
+    
+    fitdist.lower <- c(0, 0, -Inf)
+    
   }
   
   

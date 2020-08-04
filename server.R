@@ -91,6 +91,7 @@ shinyServer(function(input, output, session) {
       #ヒストグラム表示
       output$gg.hist <- renderPlot({gg.hist(vec.data() )})
       
+      
       #数値のまとめ表示
       output$vec.summary <- renderText({vec.summary(vec.data())})
       
