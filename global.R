@@ -485,6 +485,35 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
     
   } 
   
+  
+  #2変量混合対数正規分布の場合の初期値
+  if(distr == "lnormmix2"){
+    
+    #EMアルゴリズム
+    normalmixEM.res <- try(normalmixEM(log(data), k = 2), silent = TRUE)
+    
+    #エラーの場合は止める
+    if(class(normalmixEM.res)[1] == "try-error"){
+      return(error.ret(Sys.time()))
+    }
+    
+    
+    fitdist.start <- list(
+      meanlog1 = normalmixEM.res$mu[1], 
+      sdlog1 = normalmixEM.res$sigma[1],
+      rate1 = normalmixEM.res$lambda[1],
+      
+      meanlog2 = normalmixEM.res$mu[2],
+      sdlog2 = normalmixEM.res$sigma[2],
+      rate2 = normalmixEM.res$lambda[2])
+    
+    
+    fitdist.lower <- c(-Inf, 0, 0, -Inf, 0, 0)
+    fitdist.upper <- c(Inf, Inf, 1, Inf, Inf, 1)
+    
+    
+  }
+  
   #4変量混合正規分布の場合の初期値
   if(distr == "tnorm"){
     

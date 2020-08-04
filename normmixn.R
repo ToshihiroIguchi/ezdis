@@ -117,6 +117,99 @@ qnormmixn <- function(p, mean, sd, rate){
 }
 
 
+#確率密度
+dlnormmixn <- function(x, meanlog, sdlog, rate){
+  #エラーチェック
+  if(!is.numeric(x)){stop("x is not numeric.")}
+  
+  #エラーチェック
+  normmixn.chk(meanlog, sdlog, rate)
+  
+  #比率の正規化
+  rate <- norm.rate(rate)
+  
+  #初期値
+  ret <- rep(0, length(x))
+  
+  #足し合わせ
+  for(i in 1:length(meanlog)){
+    ret <- ret + rate[i]*dlnorm(x, meanlog[i], sdlog[i])
+  }
+  
+  #戻り値
+  return(ret)
+}
+
+#累積分布
+plnormmixn <- function(q, meanlog, sdlog, rate){
+  #エラーチェック
+  if(!is.numeric(q)){stop("x is not numeric.")}
+  
+  #エラーチェック
+  normmixn.chk(meanlog, sdlog, rate)
+  
+  #比率の正規化
+  rate <- norm.rate(rate)
+  
+  #初期値
+  ret <- rep(0, length(q))
+  
+  #足し合わせ
+  for(i in 1:length(meanlog)){
+    ret <- ret + rate[i]*plnorm(q, meanlog[i], sdlog[i])
+  }
+  
+  #戻り値
+  return(ret)
+}
+
+#確率点
+qlnormmixn <- function(p, meanlog, sdlog, rate){
+  
+  #戻り値
+  ret <- rep(NA, length(p))
+  
+  #初期値を決める
+  start.par <- max(meanlog)
+  
+  #各pの値
+  for(i in 1:length(p)){
+    
+    #最小化する関数
+    q.opt <- function(x){
+      
+      ret <- (plnormmixn(q = x, meanlog = meanlog, sdlog = sdlog, rate = rate) - p[i])^2
+      
+      #対数変換 ret=0 だと-Infになってしまうので、小さな数を足す
+      ret <- log(ret + 1e-10)
+      
+      return(ret)
+    }
+    
+    #最適化(L-BFGS-B)
+    opt.res <- optim(par = start.par, q.opt, method = "L-BFGS-B")
+    
+    #BFGSは変に収束
+    #CGは0.156239 secs
+    #L-BFGS-Bは0.1366379 secs
+    #SANNは0.789161 secs
+    
+    #求めたい値
+    ret[i] <- opt.res$par
+    
+    #初期値を変更
+    start.par <- opt.res$par
+  }
+  
+  #戻り値
+  return(ret)
+}
+
+
+
+
+
+
 #2変量混合正規分布の確率密度
 dnormmix2 <- function(x, mean1, sd1, rate1, mean2, sd2, rate2){
   dnormmixn(x, mean = c(mean1, mean2), 
@@ -124,14 +217,14 @@ dnormmix2 <- function(x, mean1, sd1, rate1, mean2, sd2, rate2){
   
 }
 
-#3変量混合正規分布の確率密度
+#2変量混合正規分布の確率密度
 pnormmix2 <- function(p, mean1, sd1, rate1, mean2, sd2, rate2){
   pnormmixn(p, mean = c(mean1, mean2), 
             sd = c(sd1, sd2), rate = c(rate1, rate2))
   
 }
 
-#3変量混合正規分布の確率密度
+#2変量混合正規分布の確率密度
 qnormmix2 <- function(q, mean1, sd1, rate1, mean2, sd2, rate2){
   qnormmixn(q, mean = c(mean1, mean2), 
             sd = c(sd1, sd2), rate = c(rate1, rate2))
@@ -186,7 +279,29 @@ qnormmix4 <- function(q, mean1, sd1, rate1, mean2, sd2, rate2,
 }
 
 
+#2変量混合対数正規分布の確率密度
+dlnormmix2 <- function(x, meanlog1, sdlog1, rate1, meanlog2, sdlog2, rate2){
+  dlnormmixn(x, meanlog = c(meanlog1, meanlog2), 
+            sdlog = c(sdlog1, sdlog2), rate = c(rate1, rate2))
+  
+}
 
+#2変量混合対数正規分布の確率密度
+plnormmix2 <- function(p, meanlog1, sdlog1, rate1, meanlog2, sdlog2, rate2){
+  plnormmixn(p, meanlog = c(meanlog1, meanlog2), 
+            sdlog = c(sdlog1, sdlog2), rate = c(rate1, rate2))
+  
+}
+
+#2変量混合対数正規分布の確率密度
+qlnormmix2 <- function(q, meanlog1, sdlog1, rate1, meanlog2, sdlog2, rate2){
+  qlnormmixn(q, meanlog = c(meanlog1, meanlog2), 
+            sdlog = c(sdlog1, sdlog2), rate = c(rate1, rate2))
+  
+}
+
+
+qlnormmix2(c(0.1,0.2,0.3),1,1,0.5,2,2,0.5)
 
 
 
