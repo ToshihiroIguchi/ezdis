@@ -32,6 +32,7 @@ normmix3,mixture of 3 normal distributions,TRUE,
 normmix4,mixture of 4 normal distributions,FALSE,
 lnormmix2,mixture of 2 log-normal distributions,TRUE,
 tnorm,truncated normal distribution,TRUE,
+zmnorm,zero-modified normal distribution,TRUE,
 boxcox,Box-Cox distribution,FALSE,–Þ“x‚ª’á‚¢
 voigt,Voigt profile,TRUE,
 unif,uniform distribution,TRUE,

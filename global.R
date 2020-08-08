@@ -4,9 +4,7 @@ library(tibble)
 
 library(readr)
 library(readxl)
-
 library(R.utils)
-
 
 library(fitdistrplus)
 library(ismev)
@@ -530,12 +528,23 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
     
   }
   
-  #4変量混合正規分布の場合の初期値
+  #切断正規分布の場合の初期値
   if(distr == "tnorm"){
     
     fitdist.start <- list(mean = mean(data), sd = sd(data), a= min(data), b = max(data))
     fitdist.lower <- c(-Inf, 0, -Inf, -Inf)
 
+    
+    
+  } 
+  
+  #切断正規分布の場合の初期値
+  if(distr == "zmnorm"){
+    
+    fitdist.start <- list(mean = mean(data), sd = sd(data), p.zero = 0.5)
+    fitdist.lower <- c(-Inf, 0, 0)
+    fitdist.upper <- c(Inf, Inf,1)
+    
     
     
   } 
@@ -933,6 +942,17 @@ plot_paper <- function(result, rank = "median", method = "norm"){
     point.y <- expp(fi)
     axis.y <- expp(probs)
     p.vec.y <- expp(p.vec)
+  }
+  
+  #累積確率分布の場合
+  if(method == "cdf"){
+
+    plot.y <- (c(0, 1))
+    point.y <- (fi)
+    
+    axis.y <- seq(0, 1, by = 0.1)
+    p.vec.y <- (p.vec)
+    
   }
   
   

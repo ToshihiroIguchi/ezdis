@@ -15,12 +15,13 @@ dist <- read.csv("dist.csv")
 options(shiny.maxRequestSize = 100*1024^2)
 
 #確率紙
-paper.method <- c("norm", "lnorm", "gumbel", "weibull", "exp")
+paper.method <- c("norm", "lnorm", "gumbel", "weibull", "exp", "cdf")
 names(paper.method) <- c("Normal probability plot",
                          "Log normal probability plot",
                          "Gumbel probability plot",
                          "Weibull probability plot",
-                         "Exponential probability paper")
+                         "Exponential probability paper",
+                         "Cumulative distribution function")
 paper.method.pos <- paper.method[-c(2, 4)]
 
 #ランクの計算方法
