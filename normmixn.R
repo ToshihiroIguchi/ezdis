@@ -208,8 +208,6 @@ qlnormmixn <- function(p, meanlog, sdlog, rate){
 
 
 
-
-
 #2変量混合正規分布の確率密度
 dnormmix2 <- function(x, mean1, sd1, rate1, mean2, sd2, rate2){
   dnormmixn(x, mean = c(mean1, mean2), 
@@ -218,15 +216,15 @@ dnormmix2 <- function(x, mean1, sd1, rate1, mean2, sd2, rate2){
 }
 
 #2変量混合正規分布の確率密度
-pnormmix2 <- function(p, mean1, sd1, rate1, mean2, sd2, rate2){
-  pnormmixn(p, mean = c(mean1, mean2), 
+pnormmix2 <- function(q, mean1, sd1, rate1, mean2, sd2, rate2){
+  pnormmixn(q, mean = c(mean1, mean2), 
             sd = c(sd1, sd2), rate = c(rate1, rate2))
   
 }
 
 #2変量混合正規分布の確率密度
-qnormmix2 <- function(q, mean1, sd1, rate1, mean2, sd2, rate2){
-  qnormmixn(q, mean = c(mean1, mean2), 
+qnormmix2 <- function(p, mean1, sd1, rate1, mean2, sd2, rate2){
+  qnormmixn(p, mean = c(mean1, mean2), 
             sd = c(sd1, sd2), rate = c(rate1, rate2))
   
 }
@@ -241,15 +239,15 @@ dnormmix3 <- function(x, mean1, sd1, rate1, mean2, sd2, rate2, mean3, sd3, rate3
 }
 
 #3変量混合正規分布の確率密度
-pnormmix3 <- function(p, mean1, sd1, rate1, mean2, sd2, rate2, mean3, sd3, rate3){
-  pnormmixn(p, mean = c(mean1, mean2, mean3), 
+pnormmix3 <- function(q, mean1, sd1, rate1, mean2, sd2, rate2, mean3, sd3, rate3){
+  pnormmixn(q, mean = c(mean1, mean2, mean3), 
             sd = c(sd1, sd2, sd3), rate = c(rate1, rate2, rate3))
   
 }
 
 #3変量混合正規分布の確率密度
-qnormmix3 <- function(q, mean1, sd1, rate1, mean2, sd2, rate2, mean3, sd3, rate3){
-  qnormmixn(q, mean = c(mean1, mean2, mean3), 
+qnormmix3 <- function(p, mean1, sd1, rate1, mean2, sd2, rate2, mean3, sd3, rate3){
+  qnormmixn(p, mean = c(mean1, mean2, mean3), 
             sd = c(sd1, sd2, sd3), rate = c(rate1, rate2, rate3))
   
 }
@@ -264,17 +262,17 @@ dnormmix4 <- function(x, mean1, sd1, rate1, mean2, sd2, rate2,
 }
 
 #4変量混合正規分布の確率密度
-pnormmix4 <- function(p, mean1, sd1, rate1, mean2, sd2, rate2, 
+pnormmix4 <- function(q, mean1, sd1, rate1, mean2, sd2, rate2, 
                       mean3, sd3, rate3, mean4, sd4, rate4){
-  pnormmixn(p, mean = c(mean1, mean2, mean3, mean4), 
+  pnormmixn(q, mean = c(mean1, mean2, mean3, mean4), 
             sd = c(sd1, sd2, sd3, sd4), rate = c(rate1, rate2, rate3, rate4))
   
 }
 
 #4変量混合正規分布の確率密度
-qnormmix4 <- function(q, mean1, sd1, rate1, mean2, sd2, rate2, 
+qnormmix4 <- function(p, mean1, sd1, rate1, mean2, sd2, rate2, 
                       mean3, sd3, rate3, mean4, sd4, rate4){
-  qnormmixn(q, mean = c(mean1, mean2, mean3, mean4), 
+  qnormmixn(p, mean = c(mean1, mean2, mean3, mean4), 
             sd = c(sd1, sd2, sd3, sd4), rate = c(rate1, rate2, rate3, rate4))
 }
 
@@ -287,21 +285,18 @@ dlnormmix2 <- function(x, meanlog1, sdlog1, rate1, meanlog2, sdlog2, rate2){
 }
 
 #2変量混合対数正規分布の確率密度
-plnormmix2 <- function(p, meanlog1, sdlog1, rate1, meanlog2, sdlog2, rate2){
-  plnormmixn(p, meanlog = c(meanlog1, meanlog2), 
+plnormmix2 <- function(q, meanlog1, sdlog1, rate1, meanlog2, sdlog2, rate2){
+  plnormmixn(q, meanlog = c(meanlog1, meanlog2), 
             sdlog = c(sdlog1, sdlog2), rate = c(rate1, rate2))
   
 }
 
 #2変量混合対数正規分布の確率密度
-qlnormmix2 <- function(q, meanlog1, sdlog1, rate1, meanlog2, sdlog2, rate2){
-  qlnormmixn(q, meanlog = c(meanlog1, meanlog2), 
+qlnormmix2 <- function(p, meanlog1, sdlog1, rate1, meanlog2, sdlog2, rate2){
+  qlnormmixn(p, meanlog = c(meanlog1, meanlog2), 
             sdlog = c(sdlog1, sdlog2), rate = c(rate1, rate2))
   
 }
-
-
-qlnormmix2(c(0.1,0.2,0.3),1,1,0.5,2,2,0.5)
 
 
 

@@ -19,6 +19,7 @@ library(actuar)
 
 library(EnvStats)
 library(mixtools)
+library(RcppFaddeeva)
 
 #library(rmutil)
 
@@ -41,6 +42,8 @@ source("multiweibull.R")
 #Box-Cox分布
 source("boxcox.R")
 
+#Voigt分布
+source("voigt.R")
 
 #ベクトルに強制変換
 as.vec <- function(x){
@@ -364,6 +367,19 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
     fitdist.lower <- c(0, 0, -Inf)
     
   }
+
+  #Voigt分布の初期値
+  if(distr == "voigt"){
+    
+    fitdist.start <- list(
+      x0 = mean(data),
+      sigma = sd(data)/2,
+      gamma = sd(data)/2
+    )
+    
+    fitdist.lower <- c(-Inf, 0, 0)
+    
+  }
   
   
   #ベータ分布の初期値
@@ -589,8 +605,10 @@ summary.fit.dist <- function(data){
   #各結果をデータフレームに変換
   for(i in 1:length(data)){
 
+    print(names(data)[i][1])
+    
     #適合度の統計量計算
-    gofstat.res <- try(gofstat(data[[i]]), silent = TRUE)
+    gofstat.res <- try(gofstat(data[[i]]), silent = FALSE)
     
     #エラーでなければデータフレーム作成
     if(class(gofstat.res)[1] != "try-error"){
