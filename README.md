@@ -15,19 +15,6 @@ If packages are installed, it can be started from R console with the following c
     
     shiny::runGitHub("ezdis", "ToshihiroIguchi")
 
-### Tutorial
-ezdis can be operated on the browser.
-You can load csv, xls, xlsx and xlsm format files by clicking the [Browse...] button at the top left of the screen.
-
-The first line is the item name, and only the columns with all numerical values are read.
-However, if there is a sheet of xls, xlsx, xlsm format and all have numerical values, all the numerical values of that sheet are analyzed.
-
-This time, analyze the "sample.csv" file.
-After uploading to ezdis, you can select [Use data].
-By selecting the item name, the survey will start to find out which distribution fits.
-ezdis investigates whether it fits the distribution selected in "Setting" and displays it in [Distribution] in ascending order of AIC.
-
-
 ### Host
 Host the Shiny application from GitHub in a private network.
 Enter the following command in R console.
@@ -45,7 +32,20 @@ Enter the following command in R console.
 
 If you are in the private network, you can also launch the Shiny application by entering the URL following `Listing on` to the browser.
 
-       
+
+### Tutorial
+`ezdis` can be operated on the browser.
+You can load csv, xls, xlsx and xlsm format files by clicking the `Browse...` button at the top left of the screen.
+
+The first line is the item name, and only the columns with all numerical values are read.
+However, if there is a sheet of xls, xlsx, xlsm format and all have numerical values, all the numerical values of that sheet are analyzed.
+
+This time, analyze the `sample.csv` file.
+After uploading to ezdis, you can select `Use data`.
+By selecting the item name, the survey will start to find out which distribution fits.
+`ezdis` investigates whether it fits the distribution selected in `Setting` and displays it in `Distribution` in ascending order of AIC.
+
+
 ### License 
 
 ```
