@@ -11,7 +11,7 @@ dis.data <- data.frame(
 )
 
 #データ書き込み
-write.csv(dis.data, "sample.csv")
+write.csv(dis.data, "sample.csv", row.names = FALSE)
 
 
 

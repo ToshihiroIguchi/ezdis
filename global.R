@@ -43,6 +43,8 @@ source("boxcox.R")
 #Voigt分布
 source("voigt.R")
 
+
+
 #ベクトルに強制変換
 as.vec <- function(x){
   as.matrix(x) %>% as.vector()
@@ -335,6 +337,14 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
     fitdist.start <- list(min = 1, shape1 = 1, shape2 = 1, scale = 1)
     fitdist.lower <- c(-Inf, 0, 0, 0)
   }
+  
+  #ピアソン　タイプI分布
+  if(distr == "PearsonI"){
+    fitdist.start <- list(a = 1, b = 1, location = 1, scale = 1)
+    fitdist.lower <- c(0, 0, -Inf, -Inf)
+  }
+  
+  
   
   #バーンバウム　サンダース分布の初期値
   if(distr == "fatigue"){
