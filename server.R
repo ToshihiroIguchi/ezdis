@@ -6,7 +6,7 @@ library(dplyr)
 library(DT)
 
 #分布関数のデータ読み込み
-dist <- read.csv("dist.csv")
+dist <- read_csv("dist.csv",  local = locale(encoding = "latin1"))
 
 #Maximum upload size exceededを回避
 #100MB設定
@@ -43,7 +43,8 @@ shinyServer(function(input, output, session) {
     
     #データ選択
     output$colname <- renderUI({
-      if(class(raw.data())[1] != "try-error"){
+      if(class(raw.data())[1] != "try-error" && is.data.frame(raw.data())){
+
         selectInput("colname", label = "Use data", choices = c(NA, colnames(raw.data())))
       }else{
         NULL
