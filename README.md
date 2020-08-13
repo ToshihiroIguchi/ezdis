@@ -32,8 +32,12 @@ Enter the following command in R console.
 
 If you are in the private network, you can also launch the Shiny application by entering the URL following `Listing on` to the browser.
 
+### shinyapps.io
+Hosted on shinyapps.io.
+Use time is limited.
+https://toshihiroiguchi.shinyapps.io/ezdis/
 
-### Tutorial
+### How to use
 `ezdis` can be operated on the browser.
 You can load csv, xls, xlsx and xlsm format files by clicking the `Browse...` button at the top left of the screen.
 
