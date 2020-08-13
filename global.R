@@ -1,29 +1,19 @@
 #ライブラリ読み込み
 library(ggplot2)
 library(tibble)
-
 library(readr)
 library(readxl)
 library(R.utils)
-
 library(fitdistrplus)
 library(ismev)
-
 library(FAdist) #actuar,evd, EnvStarsより先に読み込ませる
 library(extraDistr)
 library(evd) #evdはactuarより先に読み込ませて、evd::dgumbelなどをマスクする
-
 library(actuar)
-
 library(EnvStats)
 library(mixtools)
 library(RcppFaddeeva)
-
-#library(rmutil)
-
-
 library(goftest) #CVMのomega2からp-valueを計算
-
 
 #Gumbel関数の読み込み
 source("gumbel.R")
@@ -887,19 +877,38 @@ plot_paper <- function(result, rank = "median", method = "norm"){
   #http://www.fml.t.u-tokyo.ac.jp/~sakai/kougi/ProbSystem/ProbPaper/probpaper.htm
   expp <- function(p) log(1/(1-p))
   
-  #fitdistの結果とpベクトルから、qベクトルを作る関数定義
-  qfit <- function(result, p){
+  
+  #対数正規確率かワイブルの場合(x軸が対数)
+  if(method == "lnorm" || method == "weibull"){
+    
+    #対数スケールだと0以下はプロットできないので、NULLを返す
+    if(min(data) <= 0){
+      return(NULL)
+    }
+    
+    #x軸を対数スケール
+    plot.log <- "x"
+    
+    #q.vecを作る
+    q.vec <- seq(min(data)*3/4, max(data)*5/4, length =100)
+    
+  }else{
+    #x軸をリニア
+    plot.log <- ""
+    
+    #q.vecを作る
+    q.vec <- seq(min(data) - sd(data), max(data) + sd(data), length =100)
+  }
+  
+  #fitdistの結果とqベクトルから、pベクトルを作る関数定義
+  pfit <- function(result, q){
     
     #エラーチェック
     if(class(result)[1] != "fitdist"){return(NULL)}
     
-    #pの値をチェック
-    if(min(p) <= 0 || max(p) >=1){
-      stop("p must be greater than 0 and less than 1.")
-    }
     
     #関数を作成
-    q.func <- paste0("q", result$distname)
+    p.func <- paste0("p", result$distname)
     
     #最適値を表示
     est.vec <- result$estimate
@@ -916,7 +925,7 @@ plot_paper <- function(result, rank = "median", method = "norm"){
     
     
     eval(parse(text = paste0(
-      "ret <- ", q.func, "(p, ", est.param, ")"
+      "ret <- ", p.func, "(q, ", est.param, ")"
     )))
     
     return(ret)
@@ -924,10 +933,7 @@ plot_paper <- function(result, rank = "median", method = "norm"){
   }
   
   #pベクトルを作る
-  p.vec <- make.f.vec(min(fi), length = 100)
-  
-  #qベクトルを作る
-  q.vec <- qfit(result, p.vec)
+  p.vec <- pfit(result, q.vec)
   
   #正規確率か対数正規確率の場合
   if(method == "norm" || method == "lnorm"){
@@ -944,7 +950,6 @@ plot_paper <- function(result, rank = "median", method = "norm"){
     axis.y <- weib(probs)
     p.vec.y <- weib(p.vec)
   }
-  
   
   #指数の場合
   if(method == "exp"){
@@ -965,23 +970,8 @@ plot_paper <- function(result, rank = "median", method = "norm"){
     
   }
   
-  
-  #対数正規確率かワイブルの場合(x軸が対数)
-  if(method == "lnorm" || method == "weibull"){
-    
-    #対数スケールだと0以下はプロットできないので、NULLを返す
-    if(min(data) <= 0){
-      return(NULL)
-    }
-    
-    #x軸を対数スケール
-    plot.log <- "x"
-  }else{
-    #x軸をリニア
-    plot.log <- ""
-  }
-  
-  
+
+
   #図を作成
   plot(c(data[1], data[rank_n]), plot.y, 
        log = plot.log,
