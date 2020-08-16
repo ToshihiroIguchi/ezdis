@@ -69,6 +69,23 @@ shinyUI(fluidPage(
                           verbatimTextOutput("summary2")
                           ),
                   
+                  tabPanel("Calc",
+                           fluidRow(
+                             column(6, 
+                                    htmlOutput("input.q"),
+                                    h4(textOutput("output.p"))
+                                    ),
+                             
+                             column(6, 
+                                    htmlOutput("input.p"), 
+                                    h4(htmlOutput("output.q"))
+                                    )
+                           )
+                           
+                           
+                           ),
+                  
+                  
                   tabPanel("Setting",
                            checkboxGroupInput("use", label = "Use distibution",
                                        choices = use.dist, 

@@ -216,6 +216,38 @@ shinyServer(function(input, output, session) {
                    rank = input$paper.rank)
       })
       
+      #分位から累積確率
+      output$input.q <- renderUI({
+        numericInput("input.q", "Quantile",
+                     value = mean(vec.data()))
+      })
+      
+      #計算した累積確率
+      output$output.p <- renderText({
+        pdist(
+          result()[[input$distr.sel]], 
+          q = input$input.q
+        ) %>% chr.num("Probability : ")
+          
+      })
+      
+      #累積確率から分位
+      output$input.p <- renderUI({
+        numericInput("input.p", "Probability",
+                     value = 0.5, min = 0, max = 1)
+      })
+      
+      #計算したq
+      output$output.q <- renderText({
+        
+        qdist(
+          result()[[input$distr.sel]], 
+          p = input$input.p
+        ) %>% chr.num("Quantile : ")
+      })
+      
+
+      
 
     })
     

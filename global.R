@@ -890,14 +890,14 @@ plot_paper <- function(result, rank = "median", method = "norm"){
     plot.log <- "x"
     
     #q.vecを作る
-    q.vec <- seq(min(data)*3/4, max(data)*5/4, length =100)
+    q.vec <- exp(seq(log(min(data)) - 1, log(max(data)) + 1, length = 1000))
     
   }else{
     #x軸をリニア
     plot.log <- ""
     
     #q.vecを作る
-    q.vec <- seq(min(data) - sd(data), max(data) + sd(data), length =100)
+    q.vec <- seq(min(data) - 3*sd(data), max(data) + 3*sd(data), length = 1000)
   }
   
   #fitdistの結果とqベクトルから、pベクトルを作る関数定義
@@ -1086,7 +1086,115 @@ fitdist_summary <- function(result){
   return(ret)
 }
 
+#qから累積確率を計算
+pdist <- function(result, q){
+  
+  #エラーチェック
+  if(is.null(result)){return(result)}
+  if(class(result)[1] != "fitdist"){return(NULL)}
+  if(is.null(q)){return(NULL)}
+  
+  #パラメータ推定に失敗した場合
+  if(result$estimate %>% na.omit() %>% length() == 0){
+    return(NULL)
+  } 
+  
+  #fitdistの結果とqベクトルから、pベクトルを作る関数定義
+  pfit <- function(result, q){
+    
+    #エラーチェック
+    if(class(result)[1] != "fitdist"){return(NULL)}
+    
+    
+    #関数を作成
+    p.func <- paste0("p", result$distname)
+    
+    #最適値を表示
+    est.vec <- result$estimate
+    
+    #パラメータを作る
+    est.param <- NULL
+    for(i in 1:length(est.vec)){
+      #iのパラメータを追加
+      est.param <- paste0(est.param, names(est.vec)[i], "=", est.vec[i])
+      
+      #最後でなければコンマを加える
+      if(i < length(est.vec)){est.param <- paste0(est.param, ", ")}
+    }
+    
+    
+    eval(parse(text = paste0(
+      "ret <- ", p.func, "(q, ", est.param, ")"
+    )))
+    
+    return(ret)
+    
+  }
+  
+  #pベクトルを作る
+  p.vec <- pfit(result, q)
+  
+}
 
+#qから累積確率を計算
+qdist <- function(result, p){
+  
+  #エラーチェック
+  if(is.null(result)){return(result)}
+  if(class(result)[1] != "fitdist"){return(NULL)}
+  if(is.null(p)){return(NULL)}
+  
+  #パラメータ推定に失敗した場合
+  if(result$estimate %>% na.omit() %>% length() == 0){
+    return(NULL)
+  } 
+  
+  #fitdistの結果とpベクトルから、qベクトルを作る関数定義
+  qfit <- function(result, p){
+    
+    #エラーチェック
+    if(class(result)[1] != "fitdist"){return(NULL)}
+    
+    
+    #関数を作成
+    q.func <- paste0("q", result$distname)
+    
+    #最適値を表示
+    est.vec <- result$estimate
+    
+    #パラメータを作る
+    est.param <- NULL
+    for(i in 1:length(est.vec)){
+      #iのパラメータを追加
+      est.param <- paste0(est.param, names(est.vec)[i], "=", est.vec[i])
+      
+      #最後でなければコンマを加える
+      if(i < length(est.vec)){est.param <- paste0(est.param, ", ")}
+    }
+    
+    
+    eval(parse(text = paste0(
+      "ret <- ", q.func, "(p, ", est.param, ")"
+    )))
+    
+    return(ret)
+    
+  }
+  
+  #qベクトルを作る
+  q.vec <- qfit(result, p)
+  
+}
 
+#chrを先頭につけてnumの数値を表示
+chr.num <- function(num, chr){
+  
+  if(is.null(chr) || is.null(num)){return(NULL)}
+  
+  ret <- paste0(chr, num)
+  
+  return(ret)
+  
+}
 
 
