@@ -219,31 +219,33 @@ shinyServer(function(input, output, session) {
       #分位から累積確率
       output$input.q <- renderUI({
         numericInput("input.q", "Quantile",
-                     value = mean(vec.data()))
+                     value = mean(vec.data()) %>% signif(digits = 4))
       })
       
       #計算した累積確率
       output$output.p <- renderText({
-        pdist(
-          result()[[input$distr.sel]], 
-          q = input$input.q
-        ) %>% chr.num("Probability : ")
+        try.null(
           
+          pdist(
+            result()[[input$distr.sel]], q = input$input.q
+            ) %>% signif(digits = 4) %>% chr.num("Probability : ")
+        )
       })
       
       #累積確率から分位
       output$input.p <- renderUI({
-        numericInput("input.p", "Probability",
+        numericInput("input.p", "Probability \\(0, 1\\)",
                      value = 0.5, min = 0, max = 1)
       })
       
       #計算したq
       output$output.q <- renderText({
-        
-        qdist(
-          result()[[input$distr.sel]], 
-          p = input$input.p
-        ) %>% chr.num("Quantile : ")
+        try.null(
+          qdist(
+            result()[[input$distr.sel]], 
+            p = input$input.p
+          ) %>% signif(digits = 4)  %>% chr.num("Quantile : ")
+        )
       })
       
 

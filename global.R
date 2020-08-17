@@ -1197,4 +1197,13 @@ chr.num <- function(num, chr){
   
 }
 
+#エラーの場合NULLを返す
+try.null <- function(res){
+  
+  ret <- try(res, silent = TRUE)
+  if(class(ret)[1] == "try-error"){return(NULL)}
+  return(ret)
+  
+}
+
 
