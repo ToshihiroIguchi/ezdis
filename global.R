@@ -549,15 +549,7 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
     
   } 
   
-  
-  #一様分布の場合の初期値
-  if(distr == "unif"){
-    fitdist.start <- list(min = min(data), max = max(data))
-    fitdist.lower <- c(-Inf, mean(data))
-    fitdist.upper <- c(mean(data),Inf)
-    
-  }
-  
+
   
   #計算中の分布関数を表示
   print(distr)
