@@ -2,11 +2,11 @@
 library(shiny)
 library(fitdistrplus)
 library(dplyr)
-
 library(DT)
 
 #分布関数のデータ読み込み
-dist <- read_csv("dist.csv",  local = locale(encoding = "latin1"))
+#dist <- read_csv("dist.csv",  local = locale(encoding = "latin1"))
+dist <- read_csv("dist.csv")
 
 #Maximum upload size exceededを回避
 #100MB設定
@@ -234,7 +234,7 @@ shinyServer(function(input, output, session) {
       
       #累積確率から分位
       output$input.p <- renderUI({
-        numericInput("input.p", "Probability \\(0, 1\\)",
+        numericInput("input.p", "Probability (0 - 1)",
                      value = 0.5, min = 0, max = 1)
       })
       

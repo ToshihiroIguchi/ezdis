@@ -1,4 +1,4 @@
-distr,name,use,memo
+﻿distr,name,use,memo
 norm,normal distribution,TRUE,
 lnorm,log-normal distribution,TRUE,
 gev,generalized extreme value distribution,TRUE,
@@ -33,7 +33,7 @@ normmix4,mixture of 4 normal distributions,FALSE,
 lnormmix2,mixture of 2 log-normal distributions,TRUE,
 tnorm,truncated normal distribution,TRUE,
 zmnorm,zero-modified normal distribution,TRUE,
-boxcox,Box-Cox distribution,FALSE,ml is too small
+boxcox,Box-Cox distribution,FALSE,尤度が低すぎる
 voigt,Voigt profile,TRUE,
 unif,uniform distribution,TRUE,
 chisq,chi-squared distribution,FALSE,

@@ -1,10 +1,10 @@
 #ライブラリ読み込み
 library(shiny)
-
 library(DT)
 
 #分布関数のデータ読み込み
-dist <- read.csv("dist.csv")
+dist <- read_csv("dist.csv")
+
 
 #使用する手法
 use.dist <- dist[, "distr"] %>% as.vec()

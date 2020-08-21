@@ -15,6 +15,7 @@ library(mixtools)
 library(RcppFaddeeva)
 library(goftest) #CVMのomega2からp-valueを計算
 
+
 #Gumbel関数の読み込み
 source("gumbel.R")
 
@@ -1197,5 +1198,6 @@ try.null <- function(res){
   return(ret)
   
 }
+
 
 
