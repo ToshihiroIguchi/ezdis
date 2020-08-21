@@ -381,6 +381,19 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   }
   
   
+  #レヴィ分布
+  if(distr == "Levy"){
+    
+    fitdist.start <- list(
+      m = min(data),
+      s = 1
+    )
+    
+    fitdist.lower <- c(-Inf, 0)
+    
+  }
+  
+  
   #ベータ分布の初期値
   if(distr == "beta"){
     fitdist.start <- list(shape1 = 1, shape2 = 1)

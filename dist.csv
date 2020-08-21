@@ -1,4 +1,4 @@
-Ôªødistr,name,use,memo
+distr,name,use,memo
 norm,normal distribution,TRUE,
 lnorm,log-normal distribution,TRUE,
 gev,generalized extreme value distribution,TRUE,
@@ -18,6 +18,7 @@ pareto4,Pareto type IV distribution,TRUE,
 multiweibull,multi-modal Weibull distribution,TRUE,
 pois,Poisson distribution,TRUE,
 cauchy,Cauchy distribution,TRUE,
+Levy,Levy distribution,TRUE,
 gamma,gamma distribution,TRUE,
 laplace,Laplace distribution(double exponential distribution),TRUE,
 fatigue,Birnbaum-Saunders distribution(fatigue life distribution),TRUE,
@@ -33,7 +34,7 @@ normmix4,mixture of 4 normal distributions,FALSE,
 lnormmix2,mixture of 2 log-normal distributions,TRUE,
 tnorm,truncated normal distribution,TRUE,
 zmnorm,zero-modified normal distribution,TRUE,
-boxcox,Box-Cox distribution,FALSE,Â∞§Â∫¶„Åå‰Ωé„Åô„Åé„Çã
+boxcox,Box-Cox distribution,FALSE,ñﬁìxÇ™í·Ç∑Ç¨ÇÈ
 voigt,Voigt profile,TRUE,
 unif,uniform distribution,TRUE,
 chisq,chi-squared distribution,FALSE,
