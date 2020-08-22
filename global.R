@@ -34,6 +34,8 @@ source("boxcox.R")
 #Voigt分布
 source("voigt.R")
 
+#Levy分布
+source("Levy.R")
 
 
 #ベクトルに強制変換
@@ -380,19 +382,18 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
     
   }
   
-  
   #レヴィ分布
   if(distr == "Levy"){
     
     fitdist.start <- list(
-      m = min(data),
+      m = min(data) - 1,
       s = 1
     )
     
     fitdist.lower <- c(-Inf, 0)
+    fitdist.upper <- c(min(data), Inf)
     
   }
-  
   
   #ベータ分布の初期値
   if(distr == "beta"){
