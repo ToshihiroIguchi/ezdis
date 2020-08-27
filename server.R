@@ -6,7 +6,7 @@ library(DT)
 
 #分布関数のデータ読み込み
 #dist <- read_csv("dist.csv",  local = locale(encoding = "latin1"))
-dist <- read_csv("dist.csv")
+dist <- suppressMessages(read_csv("dist.csv")) 
 
 #Maximum upload size exceededを回避
 #100MB設定

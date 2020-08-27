@@ -745,7 +745,7 @@ read.data <- function(file){
     
     #csvが数値だけのデータの場合はシート全体をベクトル化
     #1行目からデータを読み込む
-    ret.chk.raw <- suppressWarnings(read_csv(file, col_names = FALSE))  
+    ret.chk.raw <- suppressMessages(read_csv(file, col_names = FALSE))  
     
     #数値のみ選択
     ret.chk <- ret.chk.raw %>% select_if(is.numeric) 
@@ -762,7 +762,7 @@ read.data <- function(file){
     }
     
     #文字の列が存在する阿合は、項目名から再度読み込んで各列を数値化
-    ret <- suppressWarnings(read_csv(file))   %>%
+    ret <- suppressMessages(read_csv(file))   %>%
       select_if(is.numeric) #数値のみ選択
     
     #戻り値

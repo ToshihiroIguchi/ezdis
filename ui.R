@@ -3,7 +3,7 @@ library(shiny)
 library(DT)
 
 #分布関数のデータ読み込み
-dist <- read_csv("dist.csv")
+dist <- suppressMessages(read_csv("dist.csv")) 
 
 
 #使用する手法
