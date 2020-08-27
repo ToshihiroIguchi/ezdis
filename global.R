@@ -25,6 +25,9 @@ source("normmixn.R")
 #パレート分布
 source("Pareto.R")
 
+#一般化パレート分布
+source("GPD.R")
+
 #多重モードワイブル分布
 source("multiweibull.R")
 
@@ -269,7 +272,7 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   if(distr == "gev"){
     
     #evdパッケージのgev関数
-    gev.res <- try(gev.fit(data), silent = FALSE)
+    gev.res <- try(gev.fit(data, show = FALSE), silent = FALSE)
     
     #結果がエラーなら空の結果を返す
     if(class(gev.res)[1] == "try-error"){
@@ -283,21 +286,43 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   }
 
   #一般化パレート分布の場合の初期値
-  if(distr == "gpd"){
-    gen.pareto.res <- try(gev.fit(data), silent  = FALSE)
+  if(distr == "GPD"){
+    gen.pareto.res <- try(gpd.fit(data, show = TRUE, threshold = 2), silent  = FALSE)
     
     #結果がエラーなら空の結果を返す
     if(class(gen.pareto.res)[1] == "try-error"){
       return(error.ret(Sys.time()))
     }
     
-    fitdist.start <- list(
-      loc = gen.pareto.res$mle[1], 
-      scale = gen.pareto.res$mle[2], 
-      shape = gen.pareto.res$mle[3]
-    )
+    #対数尤度の計算
+    dgpd.loglikehood  <- function(x, loc, scale, shape){
+      ret <- sum(log(dGPD(x, loc, scale, shape)))
+      if(is.nan(ret)){ret <- -Inf}
+      return(ret)
+      
+      
+    }
     
+    #パラメータから対数尤度を求める関数
+    dgpd.opt <- function(x){
+      dgpd.loglikehood(x = data, x[1], x[2], x[3])
+    }
+    
+    
+    #対数尤度を最大化
+    gpd.opt <- optim(par = c(min(0, data) - 0.1 , 1, 2), 
+                     fn = dgpd.opt, control = list(fnscale  = -1))
+    
+    #初期値を定義
+    fitdist.start <- list(loc = gpd.opt$par[1], 
+                          scale = gpd.opt$par[2], 
+                          shape = gpd.opt$par[3])
+    
+    
+    #最小値と最大値
     fitdist.lower <- c(-Inf, 0, -Inf)
+    fitdist.upper <- c(min(data), Inf, Inf)
+    
   }
   
   #指数分布の場合の初期値
@@ -720,7 +745,7 @@ read.data <- function(file){
     
     #csvが数値だけのデータの場合はシート全体をベクトル化
     #1行目からデータを読み込む
-    ret.chk.raw <- read_csv(file, col_names = FALSE)
+    ret.chk.raw <- suppressWarnings(read_csv(file, col_names = FALSE))  
     
     #数値のみ選択
     ret.chk <- ret.chk.raw %>% select_if(is.numeric) 
@@ -737,7 +762,7 @@ read.data <- function(file){
     }
     
     #文字の列が存在する阿合は、項目名から再度読み込んで各列を数値化
-    ret <- read_csv(file) %>%
+    ret <- suppressWarnings(read_csv(file))   %>%
       select_if(is.numeric) #数値のみ選択
     
     #戻り値
