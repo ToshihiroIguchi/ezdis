@@ -8,11 +8,17 @@ dboxcox <- function(x, m, s = 1, f = 1){
   If0 <- if(f < 0){1}else{0}
   
   #box-cox分布の確率密度
-  ret <- 1/((1 - If0 - sign(f) * pnorm(0, m, sqrt(s))) * sqrt(2 * pi * s^2)) * exp(-(1/(2 * s^2)) * ((x^f)/f - m)^2)
+  ret <- (1/((1 - If0 - sign(f) * pnorm(0, m, sqrt(s))) * 
+              sqrt(2 * pi * (s^2)))) * exp((-1/(2 * (s^2))) * (((x^f)/f )- m)^2)
   
   #戻り値
   return(ret)
 }
+
+integrate(function(x) dboxcox(x, 0,1,-1), -Inf, Inf)
+
+
+
 
 #累積分布
 pboxcox <- function(q, m, s = 1, f = 1){

@@ -31,9 +31,6 @@ source("GPD.R")
 #多重モードワイブル分布
 source("multiweibull.R")
 
-#Box-Cox分布
-source("boxcox.R")
-
 #Voigt分布
 source("voigt.R")
 
@@ -379,19 +376,6 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   #ロジスティック分布の初期値
   if(distr == "llogis"){
     fitdist.lower <- c(0, 0)
-  }
-  
-  #BoxCox分布の初期値
-  if(distr == "boxcox"){
-    
-    fitdist.start <- list(
-      m = max(mean(data), 1e-3),
-      s = sd(data),
-      f = 1
-    )
-    
-    fitdist.lower <- c(0, 0, -Inf)
-    
   }
 
   #Voigt分布の初期値
