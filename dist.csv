@@ -11,7 +11,7 @@ rayleigh,Rayleigh distribution,TRUE,
 GPD,generalized Pareto distribution,TRUE,
 exp,exponential distribution,TRUE,
 pareto1,single-parameter Pareto distribution,TRUE,
-Pareto,Pareto type I distribution,TRUE,
+pareto_ac,Pareto type I distribution,TRUE,Ç‡Ç∆ÇÕactuarÇÃä÷êî
 pareto2,Pareto type II distribution,TRUE,
 pareto3,Pareto type III distribution,TRUE,
 pareto4,Pareto type IV distribution,TRUE,

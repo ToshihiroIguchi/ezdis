@@ -23,7 +23,7 @@ source("gumbel.R")
 source("normmixn.R")
 
 #パレート分布
-source("Pareto.R")
+source("pareto_ac.R")
 
 #一般化パレート分布
 source("GPD.R")
@@ -292,7 +292,7 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
     }
     
     #対数尤度の計算
-    dgpd.loglikehood  <- function(x, loc, scale, shape){
+    dgpd.loglikelihood  <- function(x, loc, scale, shape){
       ret <- sum(log(dGPD(x, loc, scale, shape)))
       if(is.nan(ret)){ret <- -Inf}
       return(ret)
@@ -302,9 +302,8 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
     
     #パラメータから対数尤度を求める関数
     dgpd.opt <- function(x){
-      dgpd.loglikehood(x = data, x[1], x[2], x[3])
+      dgpd.loglikelihood(x = data, x[1], x[2], x[3])
     }
-    
     
     #対数尤度を最大化
     gpd.opt <- optim(par = c(min(0, data) - 0.1 , 1, 2), 
@@ -329,27 +328,88 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   
   }
   
-  #パレート分布の場合の初期値(EnvStatsを想定)
-  if(distr == "Pareto"){
-    fitdist.start <- list(shape = 1, location = 1)
+  #パレート分布の場合の初期値(actuarを想定)
+  if(distr == "pareto_ac"){
+    fitdist.start <- list(shape = 1, scale = 1)
     fitdist.lower <- c(0, 0)
+    fitdist.upper <- c(Inf, Inf)
   }
   
   #タイプ2パレート分布の場合の初期値
   if(distr == "pareto2"){
-    fitdist.start <- list(min = 1, shape = 1, scale = 1)
+
+    #対数尤度の計算
+    dpareto2.ll <- function(x, min, shape, scale){
+      ret <- sum(log(dpareto2(x = x, min = min, shape = shape, scale = scale)))
+      if(is.nan(ret)){ret <- -Inf}
+      return(ret)
+    }
+    
+    #パラメータから対数尤度を求める関数
+    dpareto2.opt <- function(x){
+      ret <- dpareto2.ll(x = data, min = x[1], shape = x[2], scale = x[3])
+      return(ret)
+    }
+    
+    #対数尤度を最大化
+    gpd.opt <- optim(par = c(0,2,2), 
+                     fn = dpareto2.opt, control = list(fnscale  = -1))
+
+    fitdist.start <- list(min = gpd.opt$par[1], 
+                          shape = gpd.opt$par[2], scale = gpd.opt$par[3])
     fitdist.lower <- c(-Inf, 0, 0)
   }
   
   #タイプ3パレート分布の場合の初期値
   if(distr == "pareto3"){
-    fitdist.start <- list(min = 1, shape = 1, scale = 1)
+
+    #対数尤度の計算
+    dpareto3.ll <- function(x, min, shape, scale){
+      ret <- sum(log(dpareto3(x = x, min = min, shape = shape, scale = scale)))
+      if(is.nan(ret)){ret <- -Inf}
+      return(ret)
+    }
+    
+    #パラメータから対数尤度を求める関数
+    dpareto3.opt <- function(x){
+      ret <- dpareto3.ll(x = data, min = x[1], shape = x[2], scale = x[3])
+      return(ret)
+    }
+    
+    #対数尤度を最大化
+    pa3.opt <- optim(par = c(0,2,2), 
+                     fn = dpareto3.opt, control = list(fnscale  = -1))
+    
+    fitdist.start <- list(min = pa3.opt$par[1], 
+                          shape = pa3.opt$par[2], scale = pa3.opt$par[3])
+    
     fitdist.lower <- c(-Inf, 0, 0)
   }
   
   #タイプ4パレート分布の場合の初期値
   if(distr == "pareto4"){
-    fitdist.start <- list(min = 1, shape1 = 1, shape2 = 1, scale = 1)
+    
+    #対数尤度の計算
+    dpareto4.ll <- function(x, min, shape1, shape2, scale){
+      ret <- sum(log(dpareto4(x = x, min = min, shape1 = shape1, shape2 = shape2, scale = scale)))
+      if(is.nan(ret)){ret <- -Inf}
+      return(ret)
+    }
+    
+    #パラメータから対数尤度を求める関数
+    dpareto4.opt <- function(x){
+      ret <- dpareto4.ll(x = data, min = x[1], shape1 = x[2], shape2 = x[3], scale = x[4])
+      return(ret)
+    }
+    
+    #対数尤度を最大化
+    pa4.opt <- optim(par = c(0, 1, 1, 1), 
+                     fn = dpareto4.opt, control = list(fnscale  = -1))
+
+    fitdist.start <- list(min = pa4.opt$par[1], 
+                          shape1 = pa4.opt$par[2], shape2 = pa4.opt$par[3], 
+                          scale = pa4.opt$par[4])
+    
     fitdist.lower <- c(-Inf, 0, 0, 0)
   }
   
