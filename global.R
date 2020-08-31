@@ -91,6 +91,20 @@ null.na <- function(x){
   if(is.null(x)){return(NA)}else{return(x)}
 }
 
+#整数か判断(型チェックではない)
+is_integer <- function(vec){
+  
+  #そもそも数値でなかったらFALSE
+  if(!is.numeric(vec)) return(FALSE)
+    
+  #誤差二乗和
+  e2 <- sum((vec - round(vec, 0))^2)
+  
+  #戻り値
+  if(e2 == 0){return(TRUE)}else{return(FALSE)}
+  
+}
+
 #KSのD値からp値を計算
 kspval <- function(n, D, k.max = 100){
   
@@ -221,6 +235,9 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   
   #逆ワイブル分布の場合の初期値
   if(distr == "rweibull"){
+    
+    fitdist.start <- list(loc = max(data) + 1, scale = 1, shape = 1)
+
     fitdist.lower <- c(-Inf, 0, 0)
   }
   
@@ -331,6 +348,11 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   #シングルパラメータパレート分布の場合の初期値
   if(distr == "pareto1"){
     
+    #最小値が0以下だとエラー
+    if(min(data) <= 0){
+      return(error.ret(Sys.time()))
+    }
+    
     #対数尤度の計算
     dpareto1.ll <- function(x, shape, min){
       ret <- sum(log(dpareto1(x = x, shape = shape, min = min)))
@@ -345,11 +367,13 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
     }
     
     #対数尤度を最大化
-    gpd.opt <- optim(par = c(1, min(data)), 
+    gpd.opt <- optim(par = c(1, max(min(data), 1e-10)), 
                      fn = dpareto1.opt, control = list(fnscale  = -1))
     
     fitdist.start <- list(shape = gpd.opt$par[1], min = gpd.opt$par[2])
+    
     fitdist.lower <- c(0, -Inf)
+    fitdist.upper <- c(Inf, Inf)
   }
   
   #パレート分布の場合の初期値(actuarを想定)
@@ -376,7 +400,7 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
     }
     
     #対数尤度を最大化
-    gpd.opt <- optim(par = c(0,2,2), 
+    gpd.opt <- optim(par = c(min(data) - 1, 2, 2), 
                      fn = dpareto2.opt, control = list(fnscale  = -1))
 
     fitdist.start <- list(min = gpd.opt$par[1], 
@@ -401,7 +425,7 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
     }
     
     #対数尤度を最大化
-    pa3.opt <- optim(par = c(0,2,2), 
+    pa3.opt <- optim(par = c(min(data) - 1, 2, 2), 
                      fn = dpareto3.opt, control = list(fnscale  = -1))
     
     fitdist.start <- list(min = pa3.opt$par[1], 
@@ -427,7 +451,7 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
     }
     
     #対数尤度を最大化
-    pa4.opt <- optim(par = c(0, 1, 1, 1), 
+    pa4.opt <- optim(par = c(min(data), 1, 1, 1), 
                      fn = dpareto4.opt, control = list(fnscale  = -1))
 
     fitdist.start <- list(min = pa4.opt$par[1], 
@@ -657,7 +681,32 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
     
   } 
   
+  
+  #ポアソン分布の場合
+  if(distr == "pois"){
+    #整数ではないとだとエラー
+    if(!is_integer(data) || min(data) < 0){
+      return(error.ret(Sys.time()))
+    }
+  }
 
+  #幾何分布の場合
+  if(distr == "geom"){
+    #整数ではないとだとエラー
+    if(!is_integer(data) || min(data) < 0){
+      return(error.ret(Sys.time()))
+    }
+  }
+  
+  #負の二項分布の場合
+  if(distr == "nbinom"){
+    #整数ではないとだとエラー
+    if(!is_integer(data) || min(data) < 0){
+      return(error.ret(Sys.time()))
+    }
+  }
+  
+  
   
   #計算中の分布関数を表示
   print(distr)
