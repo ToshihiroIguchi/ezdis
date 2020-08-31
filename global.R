@@ -328,6 +328,30 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   
   }
   
+  #シングルパラメータパレート分布の場合の初期値
+  if(distr == "pareto1"){
+    
+    #対数尤度の計算
+    dpareto1.ll <- function(x, shape, min){
+      ret <- sum(log(dpareto1(x = x, shape = shape, min = min)))
+      if(is.nan(ret)){ret <- -Inf}
+      return(ret)
+    }
+    
+    #パラメータから対数尤度を求める関数
+    dpareto1.opt <- function(x){
+      ret <- dpareto1.ll(x = data, shape = x[1], min = x[2])
+      return(ret)
+    }
+    
+    #対数尤度を最大化
+    gpd.opt <- optim(par = c(1, min(data)), 
+                     fn = dpareto1.opt, control = list(fnscale  = -1))
+    
+    fitdist.start <- list(shape = gpd.opt$par[1], min = gpd.opt$par[2])
+    fitdist.lower <- c(0, -Inf)
+  }
+  
   #パレート分布の場合の初期値(actuarを想定)
   if(distr == "pareto_ac"){
     fitdist.start <- list(shape = 1, scale = 1)
