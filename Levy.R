@@ -7,13 +7,14 @@ library(rmutil)
 dLevy <- function(x, m, s){
   
   #戻り値のベクトルを作っておく。すべてNAを入れる。
-  ret <- rep(0, length(x))
+  ret <- rep(NA, length(x))
   
   #値が計算できるはずの位置
   good.pos <- which(x > m)
   
   #計算できる値のみを入れる
   ret[good.pos] <- rmutil::dlevy(y = x[good.pos], m = m, s = s)
+
   
   #戻り値
   return(ret)
@@ -23,7 +24,7 @@ dLevy <- function(x, m, s){
 pLevy <- function(q, m, s){
   
   #戻り値のベクトルを作っておく。すべてNAを入れる。
-  ret <- rep(0, length(q))
+  ret <- rep(NA, length(q))
   
   #値が計算できるはずの位置
   good.pos <- which(q > m)

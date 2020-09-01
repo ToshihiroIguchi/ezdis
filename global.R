@@ -37,6 +37,8 @@ source("voigt.R")
 #Levy分布
 source("Levy.R")
 
+#尤度計算でおかしいと判断する対数尤度の値
+loglik.th <- 0
 
 #ベクトルに強制変換
 as.vec <- function(x){
@@ -728,6 +730,22 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
         
         , silent = FALSE)
     )
+    
+    #もし、対数尤度が閾値を超えたらエラーとする
+    if(class(ret)[1] == "fitdist"){
+      
+      if(is.numeric(ret$loglik)){
+        
+        if(ret$loglik > loglik.th){
+          ret <- list()
+          class(ret) <- "try-error"
+        }
+        
+      }
+      
+      
+    }
+    
 
     #戻り値
     return(ret)
