@@ -224,6 +224,14 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   
   #ワイブル分布の場合の初期値
   if(distr == "weibull"){
+    
+    
+    #最小値がゼロ以下だとエラー
+    if(min(data) <= 0){
+      return(error.ret(Sys.time()))
+    }
+    
+    
     fitdist.lower <- c(0, 0)
   }
   
@@ -342,6 +350,12 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   
   #指数分布の場合の初期値
   if(distr == "exp"){
+    
+    
+    #最小値がゼロより小さい場合は空の結果を返す
+    if(min(data) < 0){
+      return(error.ret(Sys.time()))
+    }
     
     fitdist.lower <- c(0)
   
@@ -516,6 +530,15 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   
   #ベータ分布の初期値
   if(distr == "beta"){
+    
+    
+    #[0, 1]に入らない場合は空の結果を返す
+    if(min(data) < 0 || max(data) > 1){
+      return(error.ret(Sys.time()))
+    }
+    
+    
+    
     fitdist.start <- list(shape1 = 1, shape2 = 1)
     fitdist.lower <- c(0, 0)
   }
