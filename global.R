@@ -314,7 +314,7 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
 
   #一般化パレート分布の場合の初期値
   if(distr == "GPD"){
-    gen.pareto.res <- try(gpd.fit(data, show = TRUE, threshold = 2), silent  = FALSE)
+    gen.pareto.res <- try(gpd.fit(data, show = FALSE, threshold = 2), silent  = TRUE)
     
     #結果がエラーなら空の結果を返す
     if(class(gen.pareto.res)[1] == "try-error"){
