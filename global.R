@@ -28,6 +28,9 @@ source("pareto_ac.R")
 #一般化パレート分布
 source("GPD.R")
 
+#ラプラス分布
+source("Laplace.R")
+
 #多重モードワイブル分布
 source("multiweibull.R")
 
@@ -88,16 +91,11 @@ gg.hist <- function(vec, bw = NULL){
   return(ret)
 }
 
-#NULLをNAに変換
-null.na <- function(x){
-  if(is.null(x)){return(NA)}else{return(x)}
-}
-
 #整数か判断(型チェックではない)
 is_integer <- function(vec){
   
   #そもそも数値でなかったらFALSE
-  if(!is.numeric(vec)) return(FALSE)
+  if(!is.numeric(vec)){return(FALSE)}
     
   #誤差二乗和
   e2 <- sum((vec - round(vec, 0))^2)
@@ -105,6 +103,11 @@ is_integer <- function(vec){
   #戻り値
   if(e2 == 0){return(TRUE)}else{return(FALSE)}
   
+}
+
+#NULLをNAに変換
+null.na <- function(x){
+  if(is.null(x)){return(NA)}else{return(x)}
 }
 
 #KSのD値からp値を計算
@@ -371,6 +374,7 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
     
     #対数尤度の計算
     dpareto1.ll <- function(x, shape, min){
+      if(min(shape, min) <= 0){return(-Inf)}
       ret <- sum(log(dpareto1(x = x, shape = shape, min = min)))
       if(is.nan(ret)){ret <- -Inf}
       return(ret)
@@ -492,7 +496,7 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   }
   
   #ラプラス分布の初期値
-  if(distr == "laplace"){
+  if(distr == "Laplace"){
     fitdist.start <- list(mu = 0, sigma = 1)
     fitdist.lower <- c(-Inf, 0)
   }
