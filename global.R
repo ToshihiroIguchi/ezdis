@@ -799,6 +799,15 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   return(ret)
 }
 
+#負の値をNAに変換
+neg_na <- function(vec){
+  
+  ret <- vec
+  ret[vec < 0] <- NA
+  return(ret)
+  
+}
+
 #分布関数の結果を一覧表示
 summary.fit.dist <- function(data){
   
@@ -855,8 +864,15 @@ summary.fit.dist <- function(data){
 
   }
   
-  #AICの小さな順に並び替え
-  ret <- ret %>% dplyr::arrange(AIC)
+  #並び替え用のAIC
+  ret <- ret %>% dplyr::mutate(AIC2 = neg_na(AIC))
+  
+  #並び替え用AICの小さな順に並び替え
+  ret <- ret %>% dplyr::arrange(AIC2)
+  
+  #並び替え用AICを削除
+  ret[, c("AIC2")] <- NULL
+  
   
   #重複を削除
   ret <- dplyr::distinct(ret)
