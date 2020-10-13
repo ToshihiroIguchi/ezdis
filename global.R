@@ -804,6 +804,9 @@ summary.fit.dist <- function(data){
   
   #戻り値をデータフレームに
   ret <- NULL
+  
+  #空のtibble
+  df0 <- tibble()
 
   #各結果をデータフレームに変換
   for(i in 1:length(data)){
