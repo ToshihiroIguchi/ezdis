@@ -40,8 +40,7 @@ source("voigt.R")
 #Levy分布
 source("Levy.R")
 
-#尤度計算でおかしいと判断する対数尤度の値
-loglik.th <- 0
+
 
 #ベクトルに強制変換
 as.vec <- function(x){
@@ -180,6 +179,10 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   #エラーチェック
   if(is.null(data)){return(NULL)}
   
+  #尤度計算でおかしいと判断する対数尤度の値
+  loglik.th <- 1e30
+  
+  
   #初期時間
   t0 <- Sys.time()
   
@@ -189,6 +192,7 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   fitdist.lower <- -Inf
   fitdist.upper <- Inf
   optim.method <- "Nelder-Mead"
+  
   
   #エラーの場合の戻り値を定義
   error.ret <- function(st = Sys.time()){
@@ -758,12 +762,15 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
         , silent = FALSE)
     )
     
+    
     #もし、対数尤度が閾値を超えたらエラーとする
     if(class(ret)[1] == "fitdist"){
       
       if(is.numeric(ret$loglik)){
         
-        if(ret$loglik > loglik.th){
+        if(ret$loglik >= loglik.th){
+          
+          
           ret <- list()
           class(ret) <- "try-error"
         }
@@ -779,9 +786,10 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
     
   }
  
+  
   #フィッティング
   ret <- fitdist.fn(method = method)
-
+  
   #エラーならmgeで計算
   if(class(ret)[1] == "try-error"){
     ret <- fitdist.fn(method = "mge")
@@ -791,7 +799,7 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   if(class(ret)[1] == "try-error"){
     return(error.ret(Sys.time()))
   }
-
+  
   #時間を書き込み
   ret$CalculationTime <- Sys.time() - t0
   
@@ -799,20 +807,30 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   return(ret)
 }
 
-#負の値をNAに変換
-neg_na <- function(vec){
-  
-  ret <- vec
-  ret[vec < 0] <- NA
-  return(ret)
-  
-}
 
 #分布関数の結果を一覧表示
 summary.fit.dist <- function(data){
   
   #戻り値をデータフレームに
   ret <- NULL
+  
+  #閾値の以下の値をNAに変換
+  th_na <- function(vec, th = -Inf){
+    
+    #戻り値にまず初期値を入れる
+    ret <- vec
+    
+    #等号を入れたのはth = -Infのとき、-Infのみを検出するため。
+    ret[vec <= th] <- NA
+    
+    #戻り値
+    return(ret)
+    
+  }
+  
+  
+  #AICでおかしいと判断するAICの値
+  aic.th <- -Inf
   
   #空のtibble
   df0 <- tibble()
@@ -865,7 +883,7 @@ summary.fit.dist <- function(data){
   }
   
   #並び替え用のAIC
-  ret <- ret %>% dplyr::mutate(AIC2 = neg_na(AIC))
+  ret <- ret %>% dplyr::mutate(AIC2 = th_na(AIC, th = aic.th))
   
   #並び替え用AICの小さな順に並び替え
   ret <- ret %>% dplyr::arrange(AIC2)
