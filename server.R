@@ -29,6 +29,11 @@ paper.rank <- c("median", "mean")
 names(paper.rank) <- c("Median rank", "Mean rank")
 
 
+#空白の設定
+#http://cse.naro.affrc.go.jp/takezawa/r-tips/r/55.html
+par(oma = c(0, 0, 0, 0))
+
+
 shinyServer(function(input, output, session) {
   
   observeEvent(input$file, {
@@ -91,7 +96,7 @@ shinyServer(function(input, output, session) {
       })
       
       #ヒストグラム表示
-      output$gg.hist <- renderPlot({gg.hist(vec.data() )})
+      output$gg.hist <- renderPlot({gg.hist(vec.data())})
       
       
       #数値のまとめ表示

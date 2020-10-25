@@ -21,6 +21,8 @@ names(fitdist.method) <- c("maximum likelihood estimation",
 
 
 shinyUI(fluidPage(
+  
+  titlePanel(title = "", windowTitle = "ezdis"),
 
   sidebarLayout(
     sidebarPanel(
