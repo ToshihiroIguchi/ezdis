@@ -15,6 +15,8 @@ library(mixtools)
 library(RcppFaddeeva)
 library(goftest) #CVMのomega2からp-valueを計算
 
+library(rmutil)
+
 
 #Gumbel関数の読み込み
 source("gumbel.R")
@@ -212,8 +214,8 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
       return(error.ret(Sys.time()))
     }
     
-    fitdist.start <- list(meanlog = mean(log(data)), sdlog = sd(log(data)))
-    fitdist.lower <- c(-Inf, 0)
+    #fitdist.start <- list(meanlog = mean(log(data)), sdlog = sd(log(data)))
+    #fitdist.lower <- c(-Inf, 0)
   }
   
   #ガンベル分布の場合の初期値
