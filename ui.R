@@ -98,7 +98,7 @@ shinyUI(fluidPage(
                                        choices = fitdist.method),
                            
                            numericInput("timeout", label = "Seconds to timeout", 
-                                        value = 30, min = 1, step = 1)
+                                        value = 60, min = 1, step = 1)
                            
                            ),
                   tabPanel("Debug",
