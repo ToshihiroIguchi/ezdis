@@ -28,9 +28,11 @@ shinyUI(fluidPage(
     sidebarPanel(
 
       #ファイル選択
-      fileInput("file", "Data file(.csv, .xls, .xlsx, .xlsm)",
-                accept = c("csv", "xls", "xlsx", "xlsm")
-                ),
+      #fileInput("file", "Data file(.csv, .xls, .xlsx, .xlsm)",
+      #          accept = c("csv", "xls", "xlsx", "xlsm")
+      #          ),
+      htmlOutput("file"),
+      
       
       #変数の選択
       htmlOutput("colname"),

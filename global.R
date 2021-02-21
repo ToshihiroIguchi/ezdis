@@ -1439,5 +1439,18 @@ try.null <- function(res){
   
 }
 
+#データフレームでなかったらNULLを返す
+is.data.frame.null <- function(obj){
+  
+  if(is.data.frame(obj)){
+    return(obj)
+  }else{
+    return(NULL)
+  }
+  
+  
+  
+  
+}
 
 
