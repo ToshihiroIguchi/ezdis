@@ -17,6 +17,7 @@ library(goftest) #CVMのomega2からp-valueを計算
 
 library(rmutil)
 
+library(PearsonDS)
 
 #Gumbel関数の読み込み
 source("gumbel.R")
@@ -492,6 +493,13 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
     fitdist.start <- list(a = 1, b = 1, location = 1, scale = 1)
     fitdist.lower <- c(0, 0, -Inf, -Inf)
   }
+  
+  #ピアソン　タイプIV(6)分布
+  if(distr == "pearson6"){
+    fitdist.start <- list(shape1 = 5, shape2 = 1, shape3 = 1, scale = 1)
+    fitdist.lower <- c(1e-10, 1e-10, 1e-10, 1e-10)
+  }
+  
   
   
   
