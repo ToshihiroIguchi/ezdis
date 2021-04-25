@@ -17,8 +17,6 @@ library(goftest) #CVMのomega2からp-valueを計算
 
 library(rmutil)
 
-library(PearsonDS)
-
 #Gumbel関数の読み込み
 source("gumbel.R")
 
