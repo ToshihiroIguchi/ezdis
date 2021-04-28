@@ -492,25 +492,47 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   }
   
   #ピアソン　タイプI分布
-  if(distr == "PearsonI"){
-    fitdist.start <- list(a = 1, b = 1, location = 1, scale = 1)
+  if(distr == "Pearson1"){
+    fitdist.start <- list(a = 5, b = 1, location = mean(data), scale = 1)
     fitdist.lower <- c(0, 0, -Inf, -Inf)
   }
   
+  #ピアソン　タイプII分布
+  if(distr == "Pearson2"){
+    fitdist.start <- list(a = 5, location = 1, scale = 1)
+    fitdist.lower <- c(0, -Inf, -Inf)
+  }
+  
+  #ピアソン　タイプIII分布
+  if(distr == "Pearson3"){
+    fitdist.start <- list(shape = 5, location = 1, scale = 1)
+    fitdist.lower <- c(1e-10, -Inf, -Inf)
+  }
+
   #ピアソン　タイプIV(4)分布
   if(distr == "pearson4"){
-    fitdist.start <- list(m = 5, nu = 1, location = 1, scale = 1)
-    fitdist.lower <- c(1e-10, 1e-10, 1e-10, 1e-10)
+    fitdist.start <- list(m = 5, nu = 1, location = mean(data), scale = 1)
+    fitdist.lower <- c(1+1e-10, -Inf, -Inf, -Inf) #m > 1
   }
   
-  
+  #ピアソン　タイプV分布
+  if(distr == "pearson5"){
+    fitdist.start <- list(shape = 1, location = mean(data), scale = 1)
+    fitdist.lower <- c(1e-10, -Inf, -Inf)
+  }
   
   #ピアソン　タイプVI(6)分布
-  if(distr == "pearson6"){
-    fitdist.start <- list(shape1 = 5, shape2 = 1, shape3 = 1, scale = 1)
-    fitdist.lower <- c(1e-10, 1e-10, 1e-10, 1e-10)
+  if(distr == "Pearson6"){
+    #Pearsonが大文字で始まることに注意。actuarパッケージのpearson6と重複するため。
+    fitdist.start <- list(a = 5, b = 1, location = mean(data), scale = 1)
+    fitdist.lower <- c(1e-10, 0.1, -Inf, -Inf)
   }
   
+  #ピアソン　タイプVII分布
+  if(distr == "pearson7"){
+    fitdist.start <- list(df = 1, location = mean(data), scale = 1)
+    fitdist.lower <- c(0.1, -Inf, -Inf)
+  }
   
   
   

@@ -15,8 +15,13 @@ pareto_ac,Pareto type I distribution,TRUE,???Ƃ?actuar?̊֐?
 pareto2,Pareto type II distribution,TRUE,
 pareto3,Pareto type III distribution,TRUE,
 pareto4,Pareto type IV distribution,TRUE,
+pearson1,Pearson type I distribution(Beta distribution),TRUE,FALSE
+pearson2,Pearson type II distributionI(Symmetric beta distribution),TRUE,
+pearson3,Pearson type III distribution(Gamma distribution),TRUE,FALSE
 pearson4,Pearson type IV distribution,TRUE,
-pearson6,Pearson type VI distribution(Transformed beta distribution),TRUE,
+pearson5,Pearson type V distribution(Inverse gamma distribution),TRUE,FALSE
+Pearson6,Pearson type VI distribution(Beta Prime distribution),TRUE,Not actuar
+pearson7,Pearson type VII distribution(Student's t distribution),TRUE,FALSE
 multiweibull,multi-modal Weibull distribution,TRUE,
 pois,Poisson distribution,TRUE,
 cauchy,Cauchy distribution,TRUE,
