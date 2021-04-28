@@ -44,6 +44,7 @@ shinyServer(function(input, output, session) {
   })
   
   observeEvent(input$file, {
+
     
     #データ読み込み
     raw.data <- reactive({
@@ -64,8 +65,12 @@ shinyServer(function(input, output, session) {
     }
     
     observeEvent(is.data.frame.null(raw.data()), {
+
+      #ファイル名表示
+      output$file <- renderUI({h4(paste0("Data file : ", input$file$name))})
       
-      output$file <- NULL
+      #コメントアウト
+      #output$file <- NULL
 
       
       #データ選択
