@@ -20,6 +20,8 @@ library(rmutil)
 library(PearsonDS)
 library(gsl)
 
+library(ExtDist)
+
 #Gumbel関数の読み込み
 source("gumbel.R")
 
@@ -49,6 +51,9 @@ source("pearson.R")
 
 #Burr分布
 source("Burr.R")
+
+#JohnsonSU
+source("Johnson.R")
 
 #ベクトルに強制変換
 as.vec <- function(x){
@@ -538,8 +543,21 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   
   #Burr分布
   if(distr == "Burr"){
+    
+    #最小値がゼロ以下だとエラー
+    if(min(data) <= 0){
+      return(error.ret(Sys.time()))
+    }
+    
+    
     fitdist.start <- list(c = 1, k = 1, lambda = 1)
     fitdist.lower <- c(0.1, 0.1, 0.1)
+  }
+  
+  #Johnson SU分布
+  if(distr == "johnsonSU"){
+    fitdist.start <- list(gamma = -0.5, delta = 2, xi = -0.5, lambda = 2)
+    fitdist.lower <- c(-Inf, 1e-10, -Inf, 1e-10)
   }
   
   
