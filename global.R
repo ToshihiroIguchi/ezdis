@@ -47,6 +47,8 @@ source("Levy.R")
 #Pearson分布
 source("pearson.R")
 
+#Burr分布
+source("Burr.R")
 
 #ベクトルに強制変換
 as.vec <- function(x){
@@ -505,7 +507,7 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   
   #ピアソン　タイプIII分布
   if(distr == "Pearson3"){
-    fitdist.start <- list(shape = 5, location = 1, scale = 1)
+    fitdist.start <- list(shape = 5, location = mean(data), scale = 1)
     fitdist.lower <- c(1e-10, -Inf, -Inf)
   }
 
@@ -534,6 +536,11 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
     fitdist.lower <- c(0.1, -Inf, -Inf)
   }
   
+  #Burr分布
+  if(distr == "Burr"){
+    fitdist.start <- list(c = 1, k = 1, lambda = 1)
+    fitdist.lower <- c(0.1, 0.1, 0.1)
+  }
   
   
   #バーンバウム　サンダース分布の初期値
