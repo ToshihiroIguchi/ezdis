@@ -939,6 +939,14 @@ summary.fit.dist <- function(data){
         "Calculation time" = data[[i]]$CalculationTime[1]
       )
 
+    }else{
+      #エラーの場合
+      
+      #データフレーム作成
+      df0 <- tibble(
+        distr = names(data)[i][1],
+        name = data[[i]]$name[1])
+
     }
 
     #結合
