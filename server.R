@@ -197,8 +197,10 @@ shinyServer(function(input, output, session) {
         #変数選択
         output$distr.sel <- renderUI({
           
-          choices.distr <- dt.result()[, "distr"] %>% as.vec()
-          names(choices.distr) <- dt.result()[, "name"] %>% as.vec()
+          distr.df <- dt.result() %>% filter(Solution == TRUE)
+          
+          choices.distr <- distr.df[, "distr"] %>% as.vec()
+          names(choices.distr) <- distr.df[, "name"] %>% as.vec()
           
           selectInput("distr.sel", label = "Distribution",
                       choices = choices.distr)

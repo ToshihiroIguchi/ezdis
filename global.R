@@ -935,8 +935,11 @@ summary.fit.dist <- function(data){
         "Chi-squared" = null.na(gofstat.res$chisq)[1],
         "Chi-squared p-value" = null.na(gofstat.res$chisqpvalue)[1],
         
+        #計算時間
+        "Calculation time" = data[[i]]$CalculationTime[1],
         
-        "Calculation time" = data[[i]]$CalculationTime[1]
+        #解の存在
+        "Solution" = TRUE
       )
 
     }else{
@@ -945,7 +948,9 @@ summary.fit.dist <- function(data){
       #データフレーム作成
       df0 <- tibble(
         distr = names(data)[i][1],
-        name = data[[i]]$name[1])
+        name = data[[i]]$name[1],
+        Solution = FALSE
+        )
 
     }
 
