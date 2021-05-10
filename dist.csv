@@ -25,6 +25,7 @@ pearson7,Pearson type VII distribution(Student's t distribution),TRUE,FALSE
 multiweibull,multi-modal Weibull distribution,TRUE,
 Burr,Burr Type XII distribution,TRUE,
 johnsonSU,Johnson's SU-distribution,TRUE,
+johnsonSB,Johnson's SB-distribution,TRUE,
 pois,Poisson distribution,TRUE,
 cauchy,Cauchy distribution,TRUE,
 Levy,Levy distribution,TRUE,

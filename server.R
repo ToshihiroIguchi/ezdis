@@ -69,10 +69,6 @@ shinyServer(function(input, output, session) {
       #ファイル名表示
       output$file <- renderUI({h4(paste0("Data file : ", input$file$name))})
       
-      #コメントアウト
-      #output$file <- NULL
-
-      
       #データ選択
       output$colname <- renderUI({
         if(class(raw.data())[1] != "try-error" && is.data.frame(raw.data())){

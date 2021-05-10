@@ -556,7 +556,24 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   
   #Johnson SU分布
   if(distr == "johnsonSU"){
-    fitdist.start <- list(gamma = -0.5, delta = 2, xi = -0.5, lambda = 2)
+
+    fitdist.start <- list(gamma = -0.5, delta = 2, 
+                          xi = -0.5, 
+                          lambda = 2
+                          )
+    fitdist.lower <- c(-Inf, 1e-10, -Inf, 1e-10)
+  }
+  
+  #Johnson SB分布
+  if(distr == "johnsonSB"){
+    
+    #http://www.ntrand.com/jp/johnson-sb-distribution/
+    #xiとlambdaの値を設定
+    
+    fitdist.start <- list(gamma = -0.5, delta = 2, 
+                          xi = min(data) - 0.1, 
+                          lambda = (max(data) - min(data)) + 0.2
+    )
     fitdist.lower <- c(-Inf, 1e-10, -Inf, 1e-10)
   }
   
@@ -1325,7 +1342,8 @@ vec.summary <- function(vec){
   res$SD <- sd(vec)
   res$VAR <- var(vec)
   res$Skewness <- skewness(vec)
-  res$Kurtosis <- kurtosis(vec)
+  res$Kurtosis <- kurtosis(vec, excess = FALSE)
+  res$ExcessKurtosis <- kurtosis(vec, excess = TRUE) #過剰尖度
   res$Median <- median(vec)
   res$Max <- max(vec)
   res$Min <- min(vec)
