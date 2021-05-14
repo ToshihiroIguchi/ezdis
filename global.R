@@ -14,13 +14,14 @@ library(EnvStats)
 library(mixtools)
 library(RcppFaddeeva)
 library(goftest) #CVMのomega2からp-valueを計算
-
 library(rmutil)
-
 library(PearsonDS)
 library(gsl)
-
 library(ExtDist)
+
+library(lmomco)
+library(hydroApps)
+
 
 #Gumbel関数の読み込み
 source("gumbel.R")
@@ -550,16 +551,55 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
     }
     
     
-    fitdist.start <- list(c = 1, k = 1, lambda = 1)
+    #L-momentsから初期値を計算
+    start.burr <- function(data){
+      
+      #L-momentsを計算
+      data.lmom <- lmom.ub(data)
+
+            #初期値を計算
+      start.burr <- parBurrXII.approx(
+        L1 = data.lmom$L1, tau = data.lmom$LCV, tau3 = data.lmom$TAU3)
+      
+      #パラメータが正しいかとても疑問
+      #なぜkがマイナスになるのか。
+      #数式の定義が異なるのか
+      
+      #返り値
+      return(start.burr)
+    }
+    
+    #初期値計算
+    start.b <- try(start.burr(data), silent = FALSE)
+
+    #エラー処理
+    if(class(start.b)[1] == "try-error" || start.b %>% na.omit() %>% length() < 3){
+      fitdist.start <- list(c = 1, k = 1, lambda = 1)
+    }else{
+      #初期値ベクトルについている名前を消す
+      names(start.b) <- NULL
+      
+      #初期値に代入
+      fitdist.start <- list(
+        c = max(start.b[1], 0.1), 
+        k = max(-start.b[2], 0.1), 
+        lambda = max(start.b[3], 0.1)
+        )
+    }
+    
+    #最小値（ゼロより少し大きな値）
     fitdist.lower <- c(0.1, 0.1, 0.1)
   }
   
   #Johnson SU分布
   if(distr == "johnsonSU"){
+    
+    su.param <- eJohnsonSU(data)
 
-    fitdist.start <- list(gamma = -0.5, delta = 2, 
-                          xi = -0.5, 
-                          lambda = 2
+    fitdist.start <- list(gamma = su.param$gamma, 
+                          delta = su.param$delta, 
+                          xi = su.param$xi, 
+                          lambda = su.param$lambda
                           )
     fitdist.lower <- c(-Inf, 1e-10, -Inf, 1e-10)
   }
