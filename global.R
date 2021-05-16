@@ -543,10 +543,26 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   }
   
   #Burr分布
+  #後で改造
   if(distr == "Burr"){
     
     #最小値がゼロ以下だとエラー
     if(min(data) <= 0){
+      return(error.ret(Sys.time()))
+    }
+    
+    #初期値
+    fitdist.start <- list(k = 1, c = 1)
+    
+    #最小値（ゼロより少し大きな値）
+    fitdist.lower <- c(0.01, 0.01)
+  }
+  
+  #Extended Burr type XII
+  if(distr == "BurrXII"){
+    
+    #最小値がゼロ未満だとエラー
+    if(min(data) < 0){
       return(error.ret(Sys.time()))
     }
     
@@ -556,14 +572,10 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
       
       #L-momentsを計算
       data.lmom <- lmom.ub(data)
-
-            #初期値を計算
+      
+      #初期値を計算
       start.burr <- parBurrXII.approx(
         L1 = data.lmom$L1, tau = data.lmom$LCV, tau3 = data.lmom$TAU3)
-      
-      #パラメータが正しいかとても疑問
-      #なぜkがマイナスになるのか。
-      #数式の定義が異なるのか
       
       #返り値
       return(start.burr)
@@ -571,25 +583,27 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
     
     #初期値計算
     start.b <- try(start.burr(data), silent = FALSE)
-
+    
     #エラー処理
     if(class(start.b)[1] == "try-error" || start.b %>% na.omit() %>% length() < 3){
-      fitdist.start <- list(c = 1, k = 1, lambda = 1)
+      fitdist.start <- list(lambda = 1, k = -1, c = 1)
     }else{
       #初期値ベクトルについている名前を消す
       names(start.b) <- NULL
       
       #初期値に代入
       fitdist.start <- list(
-        c = max(start.b[1], 0.1), 
-        k = max(-start.b[2], 0.1), 
-        lambda = max(start.b[3], 0.1)
-        )
+        lambda = start.b[1], 
+        k = start.b[2], 
+        c = start.b[3]
+      )
     }
     
-    #最小値（ゼロより少し大きな値）
-    fitdist.lower <- c(0.1, 0.1, 0.1)
+    #最小値と最大値
+    fitdist.lower <- c(0, -Inf, 0)
+    fitdist.upper <- c(Inf, 0, Inf)
   }
+  
   
   #Johnson SU分布
   if(distr == "johnsonSU"){
