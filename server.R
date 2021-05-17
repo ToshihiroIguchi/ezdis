@@ -142,12 +142,12 @@ shinyServer(function(input, output, session) {
               incProgress(1/nrow(dist), detail = distr.original.name)
               
               #計算リストにあるか確認
-              if(match(distr.name, input$use) %>% is.na() == FALSE){
+              if(match(distr.name, isolate(input$use)) %>% is.na() == FALSE){
                 
                 #あてはめ
                 ret[[distr.name]] <- fit.dist(data = data.vec, distr = distr.name, 
-                                              method = input$fitdist.method,
-                                              timeout = input$timeout)
+                                              method = isolate(input$fitdist.method),
+                                              timeout = isolate(input$timeout))
                 
               }
               
