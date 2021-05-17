@@ -543,7 +543,6 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   }
   
   #Burr分布
-  #後で改造
   if(distr == "Burr"){
     
     #最小値がゼロ以下だとエラー
@@ -624,9 +623,13 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
     #http://www.ntrand.com/jp/johnson-sb-distribution/
     #xiとlambdaの値を設定
     
-    fitdist.start <- list(gamma = -0.5, delta = 2, 
-                          xi = min(data) - 0.1, 
-                          lambda = (max(data) - min(data)) + 0.2
+    #パラメータ推定
+    sb.param <- eJohnsonSB(data)
+    
+    fitdist.start <- list(gamma = sb.param$gamma, 
+                          delta = sb.param$delta, 
+                          xi = sb.param$xi, 
+                          lambda = sb.param$lambda
     )
     fitdist.lower <- c(-Inf, 1e-10, -Inf, 1e-10)
   }
