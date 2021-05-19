@@ -56,6 +56,11 @@ source("Burr.R")
 #JohnsonSU
 source("Johnson.R")
 
+#Lomax分布
+source("Lomax.R")
+
+
+
 #ベクトルに強制変換
 as.vec <- function(x){
   as.matrix(x) %>% as.vector()
@@ -497,6 +502,41 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
                           scale = pa4.opt$par[4])
     
     fitdist.lower <- c(-Inf, 0, 0, 0)
+  }
+  
+  
+  #Lomax分布の場合の初期値
+  if(distr == "Lomax"){
+    
+    #最小値がゼロ未満だとエラー
+    if(min(data) < 0){
+      return(error.ret(Sys.time()))
+    }
+    
+    #対数尤度の計算
+    dlomax.ll <- function(x, alpha, lambda){
+      ret <- sum(log(dLomax(x = x, alpha = abs(alpha), lambda = abs(lambda))))
+      if(is.nan(ret)){ret <- -Inf}
+      return(ret)
+    }
+    
+    #パラメータから対数尤度を求める関数
+    dplomax.opt <- function(x){
+      ret <- dlomax.ll(x = data, alpha = x[1], lambda = x[2])
+      return(ret)
+    }
+    
+    #対数尤度を最大化
+    lomax.opt <- optim(par = c(1, 1), 
+                     fn = dplomax.opt, control = list(fnscale  = -1))
+    
+    fitdist.start <- list(alpha = abs(lomax.opt$par[1]), 
+                          lambda = abs(lomax.opt$par[2]))
+    
+    print(fitdist.start)
+    
+    
+    fitdist.lower <- c(0, 0)
   }
   
   #ピアソン　タイプI分布

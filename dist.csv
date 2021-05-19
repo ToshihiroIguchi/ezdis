@@ -15,6 +15,7 @@ pareto_ac,Pareto type I distribution,TRUE,???Ƃ?actuar?̊֐?
 pareto2,Pareto type II distribution,TRUE,
 pareto3,Pareto type III distribution,TRUE,
 pareto4,Pareto type IV distribution,TRUE,
+Lomax,Lomax distribution,TRUE,
 pearson1,Pearson type I distribution(Beta distribution),TRUE,FALSE
 pearson2,Pearson type II distributionI(Symmetric beta distribution),TRUE,
 pearson3,Pearson type III distribution(Gamma distribution),TRUE,FALSE
