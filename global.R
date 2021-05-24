@@ -647,13 +647,24 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   #Johnson SU分布
   if(distr == "johnsonSU"){
     
-    su.param <- eJohnsonSU(data)
+    su.param <- try.null(eJohnsonSU(data))
+    
+    if(is.null(su.param)){
+      fitdist.start <- list(gamma = 1, 
+                            delta = 1, 
+                            xi = 1, 
+                            lambda = 1)
+      
+    }else{
+      fitdist.start <- list(gamma = su.param$gamma, 
+                            delta = su.param$delta, 
+                            xi = su.param$xi, 
+                            lambda = su.param$lambda
+      )
+      
+    }
 
-    fitdist.start <- list(gamma = su.param$gamma, 
-                          delta = su.param$delta, 
-                          xi = su.param$xi, 
-                          lambda = su.param$lambda
-                          )
+    
     fitdist.lower <- c(-Inf, 1e-10, -Inf, 1e-10)
   }
   
@@ -664,13 +675,23 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
     #xiとlambdaの値を設定
     
     #パラメータ推定
-    sb.param <- eJohnsonSB(data)
+    sb.param <- try.null(eJohnsonSB(data))
     
-    fitdist.start <- list(gamma = sb.param$gamma, 
-                          delta = sb.param$delta, 
-                          xi = sb.param$xi, 
-                          lambda = sb.param$lambda
-    )
+    if(is.null(sb.param)){
+      fitdist.start <- list(gamma = 1, 
+                            delta = 1, 
+                            xi = 1, 
+                            lambda = 1
+      )
+    }else{
+      fitdist.start <- list(gamma = sb.param$gamma, 
+                            delta = sb.param$delta, 
+                            xi = sb.param$xi, 
+                            lambda = sb.param$lambda
+      )
+    }
+    
+
     fitdist.lower <- c(-Inf, 1e-10, -Inf, 1e-10)
   }
   
