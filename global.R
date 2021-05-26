@@ -434,9 +434,35 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   
   #パレート分布の場合の初期値(actuarを想定)
   if(distr == "pareto_ac"){
-    fitdist.start <- list(shape = 1, scale = 1)
-    fitdist.lower <- c(0, 0)
+    
+    #最小値が0以下だとエラー
+    if(min(data) <= 0){
+      return(error.ret(Sys.time()))
+    }
+    
+    #対数尤度の計算
+    dpareto.ll <- function(x, shape, scale){
+      if(min(shape, scale) <= 0){return(-Inf)}
+      ret <- sum(log(dpareto_ac(x = x, shape = shape, scale = scale)))
+      if(is.nan(ret)){ret <- -Inf}
+      return(ret)
+    }
+    
+    #パラメータから対数尤度を求める関数
+    dpareto.opt <- function(x){
+      ret <- dpareto.ll(x = data, shape = x[1], scale = x[2])
+      return(ret)
+    }
+
+    #対数尤度を最大化
+    pareto.opt <- optim(par = c(1, 1), 
+                     fn = dpareto.opt, control = list(fnscale  = -1))
+
+
+    fitdist.start <- list(shape = pareto.opt$par[1], scale = pareto.opt$par[2])
+    fitdist.lower <- c(1e-10, 1e-10)
     fitdist.upper <- c(Inf, Inf)
+
   }
   
   #タイプ2パレート分布の場合の初期値
