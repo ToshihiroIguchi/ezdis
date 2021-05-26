@@ -59,7 +59,8 @@ source("Johnson.R")
 #Lomax分布
 source("Lomax.R")
 
-
+#t分布,非心t分布
+source("t.R")
 
 #ベクトルに強制変換
 as.vec <- function(x){
@@ -811,8 +812,15 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   }
   
   #t分布の場合の初期値
-  if(distr == "t"){
-    fitdist.start <- list(df = 1, ncp = 1)
+  if(distr == "t2"){
+    fitdist.lower <- c(1e-10)
+    fitdist.start <- list(df = 1)
+  }
+  
+  #非心t分布の場合の初期値
+  if(distr == "nct"){
+    fitdist.lower <- c(1e-10, -Inf)
+    fitdist.start <- list(df = 1, ncp = mean(data))
   }
   
   #F分布の場合の初期値
