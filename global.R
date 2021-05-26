@@ -212,6 +212,8 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   fitdist.upper <- Inf
   optim.method <- "Nelder-Mead"
   
+  data.length.th <- 1000
+  
   
   #エラーの場合の戻り値を定義
   error.ret <- function(st = Sys.time()){
@@ -220,6 +222,17 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
     ret$CalculationTime <- st - t0
     return(ret)
   }
+  
+  #初期値推定用のデータサンプリング
+  if(length(data) > data.length.th){
+    set.seed(108)
+    sample.data <- sample(data, size = data.length.th)
+  }else{
+    sample.data <- data
+  }
+  
+  
+  
   
   #各分布関数の初期値を指定
   
@@ -647,7 +660,9 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   #Johnson SU分布
   if(distr == "johnsonSU"){
     
-    su.param <- try.null(eJohnsonSU(data))
+    
+    #パラメータ推定
+    su.param <- try.null(eJohnsonSU(sample.data))
     
     if(is.null(su.param)){
       fitdist.start <- list(gamma = 1, 
@@ -677,22 +692,32 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
     #パラメータ推定
     sb.param <- try.null(eJohnsonSB(data))
     
+
     if(is.null(sb.param)){
+      #パラメータ推定に失敗した場合は初期値に全部1をとりあえず入れる
       fitdist.start <- list(gamma = 1, 
                             delta = 1, 
                             xi = 1, 
-                            lambda = 1
-      )
+                            lambda = 1)
+      
+      fitdist.lower <- c(-Inf, 1e-10, -Inf, 1e-10)
+      
     }else{
+      
+      #初期値にそのまま推定値を入れる
       fitdist.start <- list(gamma = sb.param$gamma, 
                             delta = sb.param$delta, 
                             xi = sb.param$xi, 
                             lambda = sb.param$lambda
-      )
+                            )
+      
+      #下限と上限を推定値の近傍で設定する。（±0.01)
+      start.vec <- c(sb.param$gamma, sb.param$delta, sb.param$xi, sb.param$lambda)
+      fitdist.lower <- start.vec - 0.01
+      fitdist.upper <- start.vec + 0.01
+      
     }
     
-
-    fitdist.lower <- c(-Inf, 1e-10, -Inf, 1e-10)
   }
   
   
