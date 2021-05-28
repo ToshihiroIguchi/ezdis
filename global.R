@@ -65,6 +65,9 @@ source("t.R")
 #F分布,非心F分布
 source("F.R")
 
+#カイ二乗分布,非心カイ二乗分布
+source("chisq.R")
+
 #ベクトルに強制変換
 as.vec <- function(x){
   as.matrix(x) %>% as.vector()
@@ -583,20 +586,52 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   }
   
   #ピアソン　タイプI分布
-  if(distr == "Pearson1"){
+  if(distr == "pearson1"){
     fitdist.start <- list(a = 5, b = 1, location = mean(data), scale = 1)
     fitdist.lower <- c(0, 0, -Inf, -Inf)
   }
   
   #ピアソン　タイプII分布
-  if(distr == "Pearson2"){
+  if(distr == "pearson2"){
     fitdist.start <- list(a = 5, location = 1, scale = 1)
     fitdist.lower <- c(0, -Inf, -Inf)
   }
   
   #ピアソン　タイプIII分布
-  if(distr == "Pearson3"){
-    fitdist.start <- list(shape = 5, location = mean(data), scale = 1)
+  if(distr == "pearson3"){
+    
+    #shape, location, scale
+    #s<>0, a>0 and (x-lambda)/s>=0., a = shape, lambda = location, s = scale
+
+    #対数尤度の計算
+    dpearson3.ll <- function(x, shape, location, scale){
+      
+      if(scale == 0){return(-Inf)}
+      if(shape <= 0){return(-Inf)}
+      if((min(data) - location)/scale < 0){return(-Inf)}
+
+      ret <- sum(log(dpearson3(x = x, shape = shape, location = location, scale = scale)))
+      if(is.nan(ret)){ret <- -Inf}
+      return(ret)
+    }
+    
+    #パラメータから対数尤度を求める関数
+    dpearson3.opt <- function(x){
+      ret <- dpearson3.ll(x = data, shape = x[1], location = x[2], scale = x[3])
+      return(ret)
+    }
+    
+    #対数尤度を最大化
+    pearson3.opt <- optim(par = c(3, min(data) - 3, 3), 
+                        fn = dpearson3.opt, control = list(fnscale  = -1))
+    
+    
+    fitdist.start <- list(
+      shape = pearson3.opt$par[1], 
+      location = pearson3.opt$par[2], 
+      scale = pearson3.opt$par[3])
+
+    #fitdist.start <- list(shape = 1, location = mean(data), scale = 1)
     fitdist.lower <- c(1e-10, -Inf, -Inf)
   }
 
@@ -810,8 +845,15 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   }
   
   #カイ二乗分布
-  if(distr == "chisq"){
+  if(distr == "chi2"){
     fitdist.start <- list(df = 1)
+    fitdist.lower <- c(1e-10)
+  }
+  
+  #非心カイ二乗分布
+  if(distr == "ncchi2"){
+    fitdist.start <- list(df = 1, ncp = 1)
+    fitdist.lower <- c(1e-10, 0)
   }
   
   #t分布の場合の初期値
