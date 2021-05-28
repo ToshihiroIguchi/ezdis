@@ -62,6 +62,9 @@ source("Lomax.R")
 #t分布,非心t分布
 source("t.R")
 
+#F分布,非心F分布
+source("F.R")
+
 #ベクトルに強制変換
 as.vec <- function(x){
   as.matrix(x) %>% as.vector()
@@ -824,8 +827,15 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   }
   
   #F分布の場合の初期値
-  if(distr == "f"){
-    fitdist.start <- list(df1 = 1, df2 = 1, ncp = 1)
+  if(distr == "F"){
+    fitdist.start <- list(df1 = 1, df2 = 1)
+    fitdist.lower <- c(1e-10, 1e-10)
+  }
+  
+  #非心F分布の場合の初期値
+  if(distr == "ncF"){
+    fitdist.start <- list(df1 = 1, df2 = 1, ncp = 0)
+    fitdist.lower <- c(1e-10, 1e-10, -Inf)
   }
   
 
