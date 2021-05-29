@@ -10,6 +10,7 @@ rweibull,reverse Weibull distribution,TRUE,
 rayleigh,Rayleigh distribution,TRUE,
 GPD,generalized Pareto distribution,TRUE,
 exp,exponential distribution,TRUE,
+normp2, Exponential power distribution,TRUE,
 pareto1,single-parameter Pareto distribution,TRUE,
 pareto_ac,Pareto type I distribution,TRUE,???Ƃ?actuar?̊֐?
 pareto2,Pareto type II distribution,TRUE,

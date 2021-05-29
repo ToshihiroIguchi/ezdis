@@ -18,9 +18,10 @@ library(rmutil)
 library(PearsonDS)
 library(gsl)
 library(ExtDist)
-
 library(lmomco)
 library(hydroApps)
+
+library(normalp)
 
 
 #Gumbel関数の読み込み
@@ -28,6 +29,9 @@ source("gumbel.R")
 
 #多変量混合正規分布
 source("normmixn.R")
+
+#exponential power distribution
+source("exponentialpower.R")
 
 #パレート分布
 source("pareto_ac.R")
@@ -406,6 +410,16 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
     fitdist.lower <- c(0)
   
   }
+  
+  #exponential power distribution
+  if(distr == "normp2"){
+    
+    fitdist.start <- list(mu = 0, sigmap = 1, shape = 2)
+    fitdist.lower <- c(-Inf, 1e-10, 1)
+    
+    
+  }
+  
   
   #シングルパラメータパレート分布の場合の初期値
   if(distr == "pareto1"){
@@ -1570,9 +1584,9 @@ vec.summary <- function(vec){
   res$Mean <- mean(vec)
   res$SD <- sd(vec)
   res$VAR <- var(vec)
-  res$Skewness <- skewness(vec)
-  res$Kurtosis <- kurtosis(vec, excess = FALSE)
-  res$ExcessKurtosis <- kurtosis(vec, excess = TRUE) #過剰尖度
+  res$Skewness <- EnvStats::skewness(vec)
+  res$Kurtosis <- EnvStats::kurtosis(vec, excess = FALSE)
+  res$ExcessKurtosis <- EnvStats::kurtosis(vec, excess = TRUE) #過剰尖度
   res$Median <- median(vec)
   res$Max <- max(vec)
   res$Min <- min(vec)
