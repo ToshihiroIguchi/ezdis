@@ -72,6 +72,9 @@ source("F.R")
 #カイ二乗分布,非心カイ二乗分布
 source("chisq.R")
 
+#Wald分布
+source("Wald.R")
+
 #ベクトルに強制変換
 as.vec <- function(x){
   as.matrix(x) %>% as.vector()
@@ -420,6 +423,17 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
     
   }
   
+  #Wald分布
+  if(distr == "Wald"){
+    
+    #最小値がゼロより小さい場合は空の結果を返す
+    if(min(data) < 0){
+      return(error.ret(Sys.time()))
+    }
+    
+    fitdist.start <- list(mu = 1, lambda = 1)
+    fitdist.lower <- c(1e-10, 1e-10)
+  }
   
   #シングルパラメータパレート分布の場合の初期値
   if(distr == "pareto1"){
