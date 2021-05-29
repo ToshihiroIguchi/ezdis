@@ -23,6 +23,8 @@ library(hydroApps)
 
 library(normalp)
 
+library(triangle)
+
 
 #Gumbel関数の読み込み
 source("gumbel.R")
@@ -62,6 +64,9 @@ source("Johnson.R")
 
 #Lomax分布
 source("Lomax.R")
+
+#三角分布
+source("triangle.R")
 
 #t分布,非心t分布
 source("t.R")
@@ -1038,7 +1043,7 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   #切断正規分布の場合の初期値
   if(distr == "tnorm"){
     
-    fitdist.start <- list(mean = mean(data), sd = sd(data), a= min(data), b = max(data))
+    fitdist.start <- list(mean = mean(data), sd = sd(data), a= min(data) - sd(data), b = max(data) + sd(data))
     fitdist.lower <- c(-Inf, 0, -Inf, -Inf)
 
     
@@ -1051,9 +1056,7 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
     fitdist.start <- list(mean = mean(data), sd = sd(data), p.zero = 0.5)
     fitdist.lower <- c(-Inf, 0, 0)
     fitdist.upper <- c(Inf, Inf,1)
-    
-    
-    
+ 
   } 
   
   
@@ -1079,6 +1082,12 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
     if(!is_integer(data) || min(data) < 0){
       return(error.ret(Sys.time()))
     }
+  }
+  
+  #三角分布の場合
+  if(distr == "triangle"){
+    fitdist.start <- list(a = min(data)-sd(data), b = max(data) + sd(data), c = (min(data) + max(data))/2)
+    
   }
   
   

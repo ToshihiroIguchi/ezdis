@@ -9,7 +9,7 @@ First, access [CRAN](https://cran.r-project.org/), download R and install.
 You can install from R console.
 First install related packages.
 
-    install.packages(c("shiny", "tibble", "dplyr", "DT", "readr", "readxl", "R.utils", "fitdistrplus", "ggplot2", "ismev", "evd", "actuar", "FAdist", "extraDistr", "EnvStats", "RcppFaddeeva", "mixtools", "goftest", "rmutil", "PearsonDS", "gsl", "ExtDist", "lmomco", "hydroApps", "normalp"))
+    install.packages(c("shiny", "tibble", "dplyr", "DT", "readr", "readxl", "R.utils", "fitdistrplus", "ggplot2", "ismev", "evd", "actuar", "FAdist", "extraDistr", "EnvStats", "RcppFaddeeva", "mixtools", "goftest", "rmutil", "PearsonDS", "gsl", "ExtDist", "lmomco", "hydroApps", "normalp", "triangle"))
     
 If packages are installed, it can be started from R console with the following command.
     
