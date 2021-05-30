@@ -792,6 +792,25 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
     fitdist.lower <- c(-Inf, 0)
   }
   
+  #gompertz分布の初期値
+  if(distr == "gompertz"){
+    fitdist.start <- list(a = 1, b = 1)
+    fitdist.lower <- c(1e-10, 1e-10)
+  }
+  
+  #Muth分布の初期値
+  if(distr == "muth"){
+    
+    #最小値がゼロより小さい場合は空の結果を返す
+    if(min(data) < 0){
+      return(error.ret(Sys.time()))
+    }
+    
+    fitdist.start <- list(alpha = 0.5)
+    fitdist.lower <- c(1e-10)
+    fitdist.upper <- c(1)
+  }
+  
   #ロジスティック分布の初期値
   if(distr == "llogis"){
     fitdist.lower <- c(0, 0)
