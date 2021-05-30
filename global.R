@@ -816,6 +816,12 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
     fitdist.lower <- c(0, 0)
   }
 
+  #双曲線正割分布の初期値
+  if(distr == "hs"){
+    fitdist.start <- list(mu = 0, sigma = 1)
+    fitdist.lower <- c(-Inf, 1e-10)
+  }
+  
   #Voigt分布の初期値
   if(distr == "voigt"){
     
