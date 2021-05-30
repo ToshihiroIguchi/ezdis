@@ -270,7 +270,6 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
     fitdist.lower <- c(-Inf, 0, 0)
   }
   
-  
   #多重モードワイブル分布の初期値
   if(distr == "multiweibull"){
     
@@ -382,11 +381,8 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   
   #exponential power distribution
   if(distr == "normp2"){
-    
     fitdist.start <- list(mu = 0, sigmap = 1, shape = 2)
     fitdist.lower <- c(-Inf, 1e-10, 1)
-    
-    
   }
   
   #Wald分布
@@ -820,6 +816,49 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   if(distr == "hs"){
     fitdist.start <- list(mu = 0, sigma = 1)
     fitdist.lower <- c(-Inf, 1e-10)
+  }
+  
+  #アーラン分布の初期値
+  if(distr == "erlang"){
+    
+    #最小値がゼロより小さい場合は空の結果を返す
+    if(min(data) < 0){
+      return(error.ret(Sys.time()))
+    }
+    
+
+    #対数尤度の計算
+    derlang.ll <- function(x, k, mu){
+      if(min(k, mu) <= 0){return(-Inf)}
+      ret <- sum(log(derlang(x = x, k = k, mu = mu)))
+      if(is.nan(ret)){ret <- -Inf}
+      return(ret)
+    }
+    
+    #パラメータから対数尤度を求める関数
+    derlang.opt <- function(x){
+      ret <- derlang.ll(x = data, k = x[1], mu = x[2])
+      return(ret)
+    }
+    
+    #対数尤度を最大化
+    erlang.opt <- optim(par = c(1, 1), 
+                        fn = derlang.opt, control = list(fnscale  = -1))
+    
+    
+    #kの最適値と推測した値
+    k.int <- round(erlang.opt$par[1])
+    
+
+    fitdist.start <- list(k = k.int, mu = erlang.opt$par[2])
+    
+    fitdist.lower <- c(k.int-1e-10, 1e-10)
+    fitdist.upper <- c(k.int+1e-10, Inf)
+    
+    
+    
+    
+    
   }
   
   #Voigt分布の初期値
