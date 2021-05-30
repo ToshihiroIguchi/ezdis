@@ -25,60 +25,21 @@ library(normalp)
 
 library(triangle)
 
+#指定したディレクトリのファイルを一括で読み込む
+source.dir <- function(dir){
+  
+  #指定されたディレクトリのファイル一覧を取得
+  files.vec <- list.files(dir)
+  
+  for(filename in files.vec){
+    
+    source(paste0(dir, "/", filename))
+  }
+  
+}
 
-#Gumbel関数の読み込み
-source("gumbel.R")
-
-#多変量混合正規分布
-source("normmixn.R")
-
-#exponential power distribution
-source("exponentialpower.R")
-
-#パレート分布
-source("pareto_ac.R")
-
-#一般化パレート分布
-source("GPD.R")
-
-#ラプラス分布
-source("Laplace.R")
-
-#多重モードワイブル分布
-source("multiweibull.R")
-
-#Voigt分布
-source("voigt.R")
-
-#Levy分布
-source("Levy.R")
-
-#Pearson分布
-source("pearson.R")
-
-#Burr分布
-source("Burr.R")
-
-#JohnsonSU
-source("Johnson.R")
-
-#Lomax分布
-source("Lomax.R")
-
-#三角分布
-source("triangle.R")
-
-#t分布,非心t分布
-source("t.R")
-
-#F分布,非心F分布
-source("F.R")
-
-#カイ二乗分布,非心カイ二乗分布
-source("chisq.R")
-
-#Wald分布
-source("Wald.R")
+#統計分布のファイルをdistディレクトリから一括で呼び出し
+source.dir("dist")
 
 #ベクトルに強制変換
 as.vec <- function(x){
