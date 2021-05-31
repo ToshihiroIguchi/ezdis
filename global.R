@@ -192,7 +192,7 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   fitdist.upper <- Inf
   optim.method <- "Nelder-Mead"
   
-  data.length.th <- 1000
+  data.length.th <- 10000
   
   
   #エラーの場合の戻り値を定義
@@ -210,9 +210,7 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   }else{
     sample.data <- data
   }
-  
-  
-  
+
   
   #各分布関数の初期値を指定
   
@@ -577,7 +575,30 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   
   #ピアソン　タイプI分布
   if(distr == "pearson1"){
-    fitdist.start <- list(a = 5, b = 1, location = mean(data), scale = 1)
+    
+    #対数尤度の計算
+    dPearson1.ll <- function(x, a, b, location, scale){
+      if(min(a, b) <= 0){return(-Inf)}
+      ret <- sum(log(dPearson6(x = x, a, b, location, scale)))
+      if(is.nan(ret)){ret <- -Inf}
+      return(ret)
+    }
+    
+    #パラメータから対数尤度を求める関数
+    dPearson1.opt <- function(x){
+      ret <- dPearson1.ll(x = data, a = x[1], b = x[2], location = x[3], scale = x[4])
+      return(ret)
+    }
+    
+    #対数尤度を最大化
+    Pearson1.opt <- optim(par = c(1, 1, min(data) - 3, 1), 
+                          fn = dPearson1.opt, control = list(fnscale  = -1))
+    
+    fitdist.start <- list(a = Pearson1.opt$par[1], b = Pearson1.opt$par[2], 
+                          location = Pearson1.opt$par[3], scale = Pearson1.opt$par[4])
+
+    
+    #fitdist.start <- list(a = 5, b = 1, location = min(data) + 3, scale = 1)
     fitdist.lower <- c(0, 0, -Inf, -Inf)
   }
   
@@ -640,7 +661,28 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   #ピアソン　タイプVI(6)分布
   if(distr == "Pearson6"){
     #Pearsonが大文字で始まることに注意。actuarパッケージのpearson6と重複するため。
-    fitdist.start <- list(a = 5, b = 1, location = mean(data), scale = 1)
+    
+    #対数尤度の計算
+    dPearson6.ll <- function(x, a, b, location, scale){
+      if(min(a, b) <= 0){return(-Inf)}
+      ret <- sum(log(dPearson6(x = x, a, b, location, scale)))
+      if(is.nan(ret)){ret <- -Inf}
+      return(ret)
+    }
+    
+    #パラメータから対数尤度を求める関数
+    dPearson6.opt <- function(x){
+      ret <- dPearson6.ll(x = data, a = x[1], b = x[2], location = x[3], scale = x[4])
+      return(ret)
+    }
+    
+    #対数尤度を最大化
+    Pearson6.opt <- optim(par = c(1, 1, min(data) - 3, 1), 
+                        fn = dPearson6.opt, control = list(fnscale  = -1))
+
+    fitdist.start <- list(a = Pearson6.opt$par[1], b = Pearson6.opt$par[2], 
+                          location = Pearson6.opt$par[3], scale = Pearson6.opt$par[4])
+    
     fitdist.lower <- c(1e-10, 0.1, -Inf, -Inf)
   }
   
@@ -714,8 +756,7 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   
   #Johnson SU分布
   if(distr == "johnsonSU"){
-    
-    
+   
     #パラメータ推定
     su.param <- try.null(eJohnsonSU(sample.data))
     
@@ -825,7 +866,6 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
     if(min(data) < 0){
       return(error.ret(Sys.time()))
     }
-    
 
     #対数尤度の計算
     derlang.ll <- function(x, k, mu){
@@ -845,7 +885,6 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
     erlang.opt <- optim(par = c(1, 1), 
                         fn = derlang.opt, control = list(fnscale  = -1))
     
-    
     #kの最適値と推測した値
     k.int <- round(erlang.opt$par[1])
     
@@ -854,11 +893,7 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
     
     fitdist.lower <- c(k.int-1e-10, 1e-10)
     fitdist.upper <- c(k.int+1e-10, Inf)
-    
-    
-    
-    
-    
+
   }
   
   #Voigt分布の初期値
@@ -922,8 +957,30 @@ fit.dist <- function(data, distr = "norm", method = "mle", timeout = 10){
   
   #非心t分布の場合の初期値
   if(distr == "nct"){
+    
+    #対数尤度の計算
+    dnct.ll <- function(x, df, ncp){
+      if(df <= 0){return(-Inf)}
+      ret <- sum(log(dnct(x = x, df = df, ncp = ncp)))
+      if(is.nan(ret)){ret <- -Inf}
+      return(ret)
+    }
+    
+    #パラメータから対数尤度を求める関数
+    dnct.opt <- function(x){
+      ret <- dnct.ll(x = data, df = x[1], ncp = x[2])
+      return(ret)
+    }
+    
+    #対数尤度を最大化
+    nct.opt <- optim(par = c(2, mean(data)), 
+                        fn = dnct.opt, control = list(fnscale  = -1))
+    
+
+    fitdist.start <- list(df = nct.opt$par[1], ncp = nct.opt$par[2])
+    
+    
     fitdist.lower <- c(1e-10, -Inf)
-    fitdist.start <- list(df = 1, ncp = mean(data))
   }
   
   #F分布の場合の初期値
