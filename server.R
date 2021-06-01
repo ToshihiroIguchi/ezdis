@@ -170,7 +170,13 @@ shinyServer(function(input, output, session) {
         })
         
         #結果一覧をdata.frameで作成
-        dt.result <- reactive({summary(result())})
+        dt.result <- reactive({
+          
+          withProgress(message = "Creating data table...", {
+            summary(result())
+            
+          })
+        })
         
         #デバッグ用の表示
         output$fit.dist.res <- renderPrint({
