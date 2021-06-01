@@ -11,12 +11,6 @@ use.dist <- dist[, "distr"] %>% as.vec()
 names(use.dist) <- dist[, "name"] %>% as.vec()
 use.dist.sel <- use.dist[which(dist[, "use"] %>% as.vec())]
 
-
-#選択方法
-batch.sel <- c("all", "allnot", "initial")
-names(batch.sel) <- c("all", "all not", "initial")
-
-
 #A character string coding for the fitting method #フィッティング法
 fitdist.method <- c("mle", "mme", "qme", "mge", "mse")
 names(fitdist.method) <- c("maximum likelihood estimation", 
@@ -97,20 +91,10 @@ shinyUI(fluidPage(
                   
                   
                   tabPanel("Setting",
-                           selectInput("batch.sel", label = "Batch selection",
-                                       choices = batch.sel,
-                                       selected = c("initial")),
-                           
-                           #All selected, all not selected, initial setting
-                           
+                         
                            checkboxGroupInput("use", label = "Use distibution",
                                        choices = use.dist, 
-                                       selected = 
-                                         if(input$batch.sel == "all"){use.dist}else{
-                                           if(input$batch.sel == "initial"){use.dist.sel}else{"norm"}
-                                         }
-                                       
-                                         #use.dist.sel
+                                       selected = use.dist.sel
                                          ,
                                        inline = TRUE),
                            
